@@ -1,12 +1,12 @@
 
-# Project Title
+# Nombre del proyecto
 Gestión del recurso humano
 
-## Features
+## Caracteristicas
 - Live Preview
 - Free to use
 
-## Tech Stack
+## Tecnologia usada
 - HTML
 - JavaScript
 - C#
