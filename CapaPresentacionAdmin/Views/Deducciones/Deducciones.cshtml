@@ -1,0 +1,402 @@
+﻿
+@{
+    ViewBag.Title = "Deducciones";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<ol class="breadcrumb mb-4 mt-4">
+    <li class="breadcrumb-item"><a href="#">Mantenimiento</a></li>
+    <li class="breadcrumb-item active">Deducciones</li>
+</ol>
+
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-user"></i> Deducciones
+    </div>
+    <div class="card-body">
+
+        <div class="row">
+            <div class="col-12">
+                <button type="button" class="btn btn-success" onclick="abrirModal(null)">Crear nuevo</button>
+            </div>
+        </div>
+
+
+        <hr />
+
+
+        <table id="tabla" class="display cell-border" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Id deducción</th>
+                    <th>Tipo deducción</th>
+                    <th>Cantidad de cuotas</th>
+                    <th>Fecha de inicio</th>
+                    <th>Fecha de finalización</th>
+                    <th>Monto de cuota</th>
+                    <th>Persona</th>
+                    <th>Activo</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+
+    </div>
+</div>
+
+<div class="modal fade" id="formModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white ">
+                <h5 class="modal-title" id="exampleModalLabel">Crear puesto</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-2">
+                    <input id="txtId" type="hidden" value="0" />
+
+                    <div class="row g-2">
+
+                        <div class="col-sm-6">
+                            <label for="txtTipoDeduccion" class="form-label">Tipo de duducción</label>
+                            <select class="form-select" id="txtTipoDeduccion" required>
+                                <option value="Préstamos">Préstamos</option>
+                                <option value="Embargos">Embargos</option>
+                                <option value="Pensiones">Pensiones</option>
+
+                            </select>
+
+                        </div>
+
+
+
+                        <div class="col-sm-6">
+                            <label for="txtCanCuotas" class="form-label">Cantidad de cuotas</label>
+                            <input type="text" class="form-control" id="txtCanCuotas" aria-describedby="emailHelp" autocomplete="off">
+
+                        </div>
+
+                        <div class="col-sm-6">
+                            <label for="txtFechaIni" class="form-label">Fecha de inicio</label>
+                            <input type="date" class="form-control" id="txtFechaIni" aria-describedby="emailHelp" autocomplete="off">
+
+                        </div>
+
+                        <div class="col-sm-6">
+                            <label for="txtFechaFina" class="form-label">Fecha de finalización</label>
+                            <input type="date" class="form-control" id="txtFechaFina" aria-describedby="emailHelp" autocomplete="off">
+
+                        </div>
+
+
+                        <div class="col-sm-6">
+                            <label for="txtIdPersona" class="form-label">Persona</label>
+                            <select class="form-select" id="txtIdPersona" required></select>
+                        </div>
+
+
+                        <div class="col-sm-6">
+                            <label for="txtMonCuotas" class="form-label">Monto de cuotas</label>
+                            <input type="text" class="form-control" id="txtMonCuotas" aria-describedby="emailHelp" autocomplete="off">
+
+
+                        </div>
+
+                        <div class="col-sm-6">
+                            <label for="txtActivo" class="form-label">Activo </label>
+                            <select class="form-select" id="txtActivo" required>
+                                <option value="1">Si</option>
+                                <option value="0">No</option>
+                           
+
+                            </select>
+
+                        </div>
+
+                        <div class="row mt-2">
+                            <div class="col-12">
+                                <div id="mensajeError" class="alert alert-danger" role="alert">
+                                    This is a danger alert—check it out!
+                                </div>
+
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                        <button type="button" class="btn btn-primary" onclick="guardar()">Guardar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+
+
+
+@section scripts{
+    <script>
+         var tablaData;
+         var filaSelecionada;
+
+ //Para llenar la tabla, identificador para el tributi id = #
+
+        tablaData = $("#tabla").DataTable({
+
+            responsive: true,
+            ordering: false,
+            "ajax": {
+
+                url: '@Url.Action("listar_Deduccion", "Deducciones")',
+                type: "GET",
+                dataType: "json",
+
+            },
+
+            "columns": [
+
+                { "data": "id_Deduccion" },
+                { "data": "tipo_Deduccion"},
+                { "data": "cantidad_Cuotas" },
+                { "data": "fecha_Inicio" },
+                { "data": "fecha_Finalizacion" },
+                {
+                    "data": "monto_Cuota",
+                    "render": function (data) {
+                        return formatearColones(data);
+                    }
+                },
+                {
+                    "data": null,
+                    "render": function (data, type, row) {
+                        return row.nombre + ' ' + row.apellido;
+                    }
+                },
+                {
+                    "data": "activo",
+                    "render": function (valor) {
+                        // Evaluamos si valor es verdaderamente `true` o `1`
+                        if (valor === true || valor === 1) {
+                            return '<span class="badge bg-success">Sí</span>';
+                        } else {
+                            return '<span class="badge bg-danger">No</span>';
+                        }
+                    }
+                },
+                {
+                    "defaultContent": '<button class="btn btn-primary btn-sm btn-editar">  <i class="fas fa-pen me-1"></i></button>' + '<button class="btn btn-danger btn-sm btn-eliminar">  <i class="fas fa-trash me-1"></i></button>',
+                    "orderable": false,
+                    "searchable": false,
+                    "width": "90px"
+                },
+            ],
+            "language": {
+                "url": "https://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json"
+            }
+        });
+              //abrir el model emergente
+        function abrirModal(json) {
+
+            $("#txtId").val("0");
+            $("#txtTipoDeduccion").val("");
+            $("#txtCanCuotas").val("");
+            $("#txtFechaIni").val("");
+            $("#txtFechaFina").val("");
+            $("#txtMonCuotas").val("");
+            $("#txtIdPersona").val("");
+            $("#txtActivo").val("");
+            $("#mensajeError").hide();
+
+            $("#formModal").modal("show");
+            if (json != null) {
+
+                $("#txtId").val(json.id_Deduccion);
+                $("#txtTipoDeduccion").val(json.tipo_Deduccion);
+                $("#txtCanCuotas").val(json.cantidad_Cuotas);
+                $("#txtFechaIni").val(json.fecha_Inicio);
+                $("#txtFechaFina").val(json.fecha_Finalizacion);
+                $("#txtMonCuotas").val(json.monto_Cuota);
+                $("#txtIdPersona").val(json.id_Persona);
+                $("#txtActivo").val(json.activo == true ? 1 : 0);
+                
+
+
+
+            }
+        }
+
+
+        $("#tabla tbody").on("click", '.btn-editar', function () {
+
+            filaSelecionada = $(this).closest("tr");
+            var data = tablaData.row(filaSelecionada).data();
+            abrirModal(data);
+        });
+
+
+
+        function guardar() {
+
+
+            var deduciones = {
+                id_Deduccion: $("#txtId").val(), // Usar el valor del campo de ID
+                tipo_Deduccion: $("#txtTipoDeduccion").val(),
+                cantidad_Cuotas: $("#txtCanCuotas").val(),
+                fecha_Inicio: $("#txtFechaIni").val(),
+                fecha_Finalizacion: $("#txtFechaFina").val(),
+                monto_Cuota: $("#txtMonCuotas").val(),
+                id_Persona: $("#txtIdPersona").val(),
+                activo: $("#txtActivo").val() == true ? 1 : 0,
+                nombre: "",
+                apellido:""
+
+
+            };
+
+                jQuery.ajax({
+                url: '@Url.Action("guardarDeducciones", "Deducciones")',
+                    type: "POST",
+                    data: JSON.stringify({ obj: deduciones }),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    $(".modal-body").LoadingOverlay("hide");
+                    //usuario nuev
+
+                    if (deduciones.id_Deduccion== 0) {
+
+                            if (data.resultado != 0) {
+                                deduciones.id_Deduccion = data.resultado;
+                                tablaData.row.add(deduciones).draw(false);
+                                $("#formModal").modal("hide");
+                                location.reload();
+                            } else {
+                                $("#mensajeError").text(data.mensaje);
+                                $("#mensajeError").show();
+                            }
+                    } else {
+                        if (data.resultado) {
+                            tablaData.row(filaSelecionada).data(deduciones).draw(false);
+                            $("#formModal").modal("hide");
+                            location.reload();
+                            } else {
+                                $("#mensajeError").text(data.mensaje);
+                                $("#mensajeError").show();
+                            }
+                    }
+                    },
+                error: function (error) {
+                    $(".modal-body").LoadingOverlay("hide");
+                    $("#mensajeError").text("Error");
+                    $("#mensajeError").show();
+                },
+                beforeSend: function () {
+                    //Cuando realize algo durante la ejecución
+                    $(".modal-body").LoadingOverlay("show", {
+                        imageResizeFactor: 2,
+                        text: "Cargando.....",
+                        size: 14
+                    });
+                }
+            });
+            }
+
+
+
+
+
+         $("#tabla tbody").on("click", '.btn-eliminar', function () {
+
+
+                    var PreSelecionado = $(this).closest("tr");
+
+             var data = tablaData.row(PreSelecionado).data();
+
+                        console.log(data);
+
+                        swal({
+                            title: "¿Desea eliminar el registro?",
+                            text: "¿Estas seguro?",
+                            type: "warning",
+                            showCancelButton: true,
+                            confirmButtonClass: "btn-primary",
+                            confirmButtonText: "Si",
+                            cancelButtonText: "No",
+
+
+                            closeOnConfirm: true
+                        },
+                            function () {
+
+                                jQuery.ajax({
+                                    url: '@Url.Action("eliminarDeduccion", "Deducciones")',
+                                    type: "POST",
+                                    data: JSON.stringify({ id: data.id_Deduccion }),
+                                    dataType: "json",
+                                    contentType: "application/json; charset=utf-8",
+                                    success: function (data) {
+
+                                        if (data.resultado) {
+                                            tablaData.row(PreSelecionado).remove().draw();
+                                        } else {
+                                            swal("No se puede eliminar",data.mensaje,"error")
+                                        }
+                                    },
+                                    error: function () {
+
+                                    },
+                                    beforeSend: function () {
+
+                                    },
+                                });
+
+                            });
+
+         });
+
+            function formatearColones(valor) {
+                return new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'CRC' }).format(valor);
+            }
+
+          function cargarPersona() {
+                $.ajax({
+                    url: '@Url.Action("getPersona", "Deducciones")',
+                    type: "GET",
+                    dataType: "json",
+                    success: function (data) {
+                        var $select = $("#txtIdPersona");
+                        $select.empty(); // Limpiar opciones existentes
+                        $.each(data.data, function (index, item) {
+                            console.log(data);
+                            $select.append($('<option>', {
+
+                                value: item.id_Persona, // Asignar valor a la opción
+                                text: item.nombre +' '+item.apellido  // Texto que se muestra
+                            }));
+
+                        });
+                    },
+                    error: function (error) {
+                        console.error("Error al cargar persona:", error);
+                    }
+                });
+          }
+
+    // Llama a la función al cargar la página o cuando sea necesario
+    $(document).ready(function () {
+        cargarPersona();
+    });
+
+
+
+    </script>
+
+}
+

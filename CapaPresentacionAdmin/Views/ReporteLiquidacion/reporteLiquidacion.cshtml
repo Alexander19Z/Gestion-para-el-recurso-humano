@@ -1,0 +1,164 @@
+﻿
+@{
+    ViewBag.Title = "reporteLiquidacion";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<ol class="breadcrumb mb-4 mt-4">
+    <li class="breadcrumb-item"><a href="#">Reportes</a></li>
+    <li class="breadcrumb-item active">Reportes</li>
+</ol>
+
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-user"></i> Reportes de liquidación
+    </div>
+    <div class="card-body">
+        <div class="row align-items-center mb-4">
+            <div class="col-sm-6">
+                <label for="txtFecha" class="form-label">Seleccionar una fecha</label>
+                <input type="month" id="txtFecha" value="" required />
+            </div>
+            <div class="col-auto mt-4">
+                <button type="button" class="btn btn-success" id="btnBuscar">Buscar</button>
+            </div>
+            <div class="col-auto mt-4">
+                <button type="button" class="btn btn-success btn-ArchivoPDF" id="btn-ArchivoPDF">Descargar reporte</button>
+            </div>
+        </div>
+
+
+        <hr />
+
+        <table id="tabla" class="display cell-border" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Apellido</th>
+                    <th>Cédula</th>
+                    <th>Fecha</th>
+                    <th>Monto a pagar</th>
+                    <th>Tipo liquidación</th>
+                    <th>Vacaciones no disfrutadas</th>
+                    <th>Cesantia</th>
+                    <th>Aguindaldo</th>
+                    <th>Preaviso</th>
+
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+
+    </div>
+</div>
+
+@section scripts{
+    <script>
+        var tablaData;
+
+        $(document).ready(function () {
+            // Inicializar la tabla sin datos y sin configuración de `ajax` al principio
+            tablaData = $("#tabla").DataTable({
+                responsive: true,
+                ordering: false,
+                "columns": [
+                    { "data": "nombre" },
+                    { "data": "apellido" },
+                    { "data": "cedula" },
+                    { "data": "descripcion" },
+                    {
+                        "data": "monto_pagar",
+                        "render": function (data) {
+                            return formatearColones(data);
+                        }
+                    },
+                    { "data": "tipo_Liquidacion" },
+                    {
+                        "data": "vacacionesNoDistrutadas",
+                        "render": function (data) {
+                            return formatearColones(data);
+                        }
+                    },
+                    {
+                        "data": "cesantia",
+                        "render": function (data) {
+                            return formatearColones(data);
+                        }
+                    },
+                    {
+                        "data": "aguinaldo",
+                        "render": function (data) {
+                            return formatearColones(data);
+                        }
+                    },
+                    {
+                        "data": "preaviso",
+                        "render": function (data) {
+                            return formatearColones(data);
+                        }
+                    }
+                ],
+                "language": {
+                    "url": "https://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json"
+                },
+                "deferLoading": 0, // No cargar datos al inicio
+            });
+
+            // Llamada al controlador solo cuando se hace clic en el botón de búsqueda
+            $('#btnBuscar').on('click', function () {
+                var fechaSeleccionada = $('#txtFecha').val();
+
+                if (fechaSeleccionada) {
+                    // Hacer la solicitud AJAX para obtener los datos
+                    $.ajax({
+                        url: '@Url.Action("listar_ReportesLiquidacion", "ReporteLiquidacion")',
+                        type: "GET",
+                        data: { fecha: fechaSeleccionada },
+                        success: function (response) {
+                            // Limpiar la tabla antes de agregar los nuevos datos
+                            tablaData.clear();
+
+                            // Agregar los datos a la tabla
+                            tablaData.rows.add(response.data); // Aquí 'response.data' debe ser el array de datos
+
+                            // Redibujar la tabla para reflejar los nuevos datos
+                            tablaData.draw();
+
+                            swal("Realizado", "", "success");
+                        },
+                        error: function () {
+                            swal("Error al cargar los datos", "", "error");
+                        }
+                    });
+                } else {
+                    swal("Seleccione una fecha", "", "error");
+                }
+            });
+
+            // Evento para descargar el PDF
+            $('#btn-ArchivoPDF').on('click', function () {
+                var fecha = $('#txtFecha').val();
+                if (fecha) {
+                    window.location.href = '@Url.Action("DescargarReporteLiquidacion", "ReporteLiquidacion")?fecha=' + fecha;
+                } else {
+                    swal("Seleccione una fecha", "", "error");
+                }
+            });
+        });
+
+
+        function formatearColones(valor) {
+            return new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'CRC' }).format(valor);
+        }
+    </script>
+}
+
+
+
+
+
+
+
+
+

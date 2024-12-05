@@ -1,0 +1,261 @@
+﻿
+@{
+    ViewBag.Title = "AprobarSolicitudes";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<ol class="breadcrumb mb-4 mt-4">
+    
+    <li class="breadcrumb-item active">Aprobación de solicitudes</li>
+</ol>
+
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-user"></i> Solicitudes de usuarios
+    </div>
+    <div class="card-body">
+        <div class="row">
+           
+        </div>
+
+
+        <hr />
+
+        <table id="tabla" class="display cell-border" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Id notificación</th>
+                    <th>Tipo de notificación</th>
+                    <th>Estado</th>
+                    <th>Nombre</th>
+                    <th>Fechas solicitadas</th>
+                    <th>Total de dias solicitados</th>
+                    <th>Total de horas solicitados</th>
+                    <th>Departamento</th>
+                    <th>Aprobación de Recursos Humanos</th>
+                    <th>Acción</th>
+
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+
+    </div>
+</div>
+
+
+
+
+
+@section scripts{
+    <script>
+         var tablaData;
+         var filaSelecionada;
+
+ //Para llenar la tabla, identificador para el tributi id = #
+
+        tablaData = $("#tabla").DataTable({
+            responsive: true,
+            ordering: false,
+            "ajax": {
+
+                url: '@Url.Action("listar_Notificaciones", "AprobarSolicitudes")',
+                type: "GET",
+                dataType: "json",
+
+            },
+
+            "columns": [
+
+
+                 { "data": "id_Noti" },
+                 { "data": "tipo_Notificacion" },
+                 {"data": "estado", "render": function (valor) {
+                    if (valor != true) {
+
+                        return '<span class="badge bg-danger">Pendiente</span>'
+
+                    } else {
+                        return '<span class="badge bg-success">Aprobado</span>'
+                    }
+
+                   }
+
+                 },
+                {
+                    "data": null,
+                    "render": function (data, type, row) {
+                        return data.nombre + " " + data.apellido;
+                    }
+
+
+
+
+                },
+
+
+                { "data": "fechasSolicitadas" },
+                { "data": "dias_Solicitado" },
+                { "data": "horas_solicitadas" },
+                { "data": "descripcion" },
+                {
+                    "data": "aprobacionRRHH", "render": function (valor) {
+                        if (valor != true) {
+
+                            return '<span class="badge bg-danger">Pendiente</span>'
+
+                        } else {
+                            return '<span class="badge bg-success">Aprobado</span>'
+                        }
+
+                    }
+
+                },
+
+
+                 {
+                     "defaultContent": '<button class="btn btn-primary btn-sm  btn-autorizar">  <i class=" fas fa-check me-1" > </i></button>' + '<button class="btn btn-danger btn-sm   btn-cancelar">  <i class=" fas fa-times me-1" > </i></button>',
+                         "orderable": false,
+                         "searchable": false,
+                         "width": "90px"
+
+                     }
+
+
+
+
+
+                 ],
+                 "language": {
+
+                     "url": "https://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json"
+                 }
+
+
+
+
+
+
+
+              });
+
+                $("#tabla tbody").on("click", '.btn-autorizar', function () {
+                    var notificacionesSelecionado = $(this).closest("tr");
+
+                    if (notificacionesSelecionado.hasClass("child")) {
+                        notificacionesSelecionado = notificacionesSelecionado.prev();
+                    }
+                var data = tablaData.row(notificacionesSelecionado).data();
+
+                console.log(data);
+                swal({
+                    title: "¿Desea aprobar el registro?",
+                    text: "¿Estas seguro?",
+                    type: "warning",
+                    showCancelButton: true,
+                    confirmButtonClass: "btn-primary",
+                    cancelButtonText: "No",
+                    confirmButtonText: "Si",
+                    closeOnConfirm: true
+                }, function () {
+                    jQuery.ajax({
+                        url: '@Url.Action("guardarNotificaciones", "AprobarSolicitudes")',
+                        type: "POST",
+                        data: JSON.stringify({ noti: data }),  // Asegúrate de que la clave sea id_Noti
+                        dataType: "json",
+                        contentType: "application/json; charset=utf-8",
+                        success: function (response) {
+                            if (response.resultado) {
+                                tablaData.row(notificacionesSelecionado).remove().draw(false);
+                                swal("Aprobado!", response.mensaje, "success");
+                                location.reload();
+                            } else {
+                                swal("Error", response.mensaje, "error");
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("Error: " + error);
+                            swal("Error", "No se pudo aprobar el registro.", "error");
+                        }
+                    });
+                });
+            });
+
+
+        $("#tabla tbody").on("click", '.btn-cancelar', function () {
+            var notificacionesSelecionado = $(this).closest("tr");
+
+            if (notificacionesSelecionado.hasClass("child")) {
+                notificacionesSelecionado = notificacionesSelecionado.prev();
+            }
+                var data = tablaData.row(notificacionesSelecionado).data();
+
+                console.log(data);
+
+                swal({
+                    title: "¿Desea cancelar la solicitud?",
+                    text: "¿Estas seguro?",
+                    type: "warning",
+                    showCancelButton: true,
+                    confirmButtonClass: "btn-primary",
+                    cancelButtonText: "No",
+                    confirmButtonText: "Si",
+                    closeOnConfirm: true
+                }, function () {
+                    jQuery.ajax({
+                        url: '@Url.Action("eliminarSolicitud", "AprobarSolicitudes")',
+                        type: "POST",
+                        data: JSON.stringify({ id: data.id_Noti }),
+                        dataType: "json",
+                        contentType: "application/json; charset=utf-8",
+                        success: function (response) {
+                            if (response.resultado) {
+                                tablaData.row(notificacionesSelecionado).remove().draw(false);
+                                swal("Eliminado!", "El registro ha sido eliminado.", "success");
+                            } else {
+                                swal("No se puede eliminar", response.mensaje, "error");
+                            }
+                        },
+                        error: function () {
+                            swal("Error", "No se pudo eliminar el registro.", "error");
+                        },
+                        beforeSend: function () {
+                            $.LoadingOverlay("show", {
+                                image: "",
+                                progress: true
+                            });
+                            var count = 0;
+                            var interval = setInterval(function () {
+                                if (count >= 100) {
+                                    clearInterval(interval);
+                                    $.LoadingOverlay("hide");
+                                    return;
+                                }
+                                count += 10;
+                                $.LoadingOverlay("progress", count);
+                            }, 200);
+                        }
+                    });
+                });
+
+
+
+
+
+
+
+     /**/
+       });
+
+
+
+
+
+
+
+    </script>
+
+}
+
+

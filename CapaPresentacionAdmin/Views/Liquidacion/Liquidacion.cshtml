@@ -1,0 +1,433 @@
+﻿
+@{
+    ViewBag.Title = "Liquidacion";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+
+<ol class="breadcrumb mb-4 mt-4">
+    <li class="breadcrumb-item"><a href="#">Mantenimiento</a></li>
+    <li class="breadcrumb-item active">Liquidación</li>
+</ol>
+
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-user"></i> Liquidación
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-12">
+                <button type="button" class="btn btn-success" onclick="abrirModal(null)">Crear nuevo</button>
+            </div>
+        </div>
+
+
+        <hr />
+
+        <table id="tabla" class="display cell-border" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Id Liquidación</th>
+                    <th>Nombre completo</th>
+                    <th>Descripción</th>
+                    <th>Monto a pagar</th>
+                    <th>Tipo de liquidación</th>
+                    <th>Vacaciones no disfrutadas</th>
+                    <th>Aguinaldo</th>
+                    <th>Cesantía</th>
+                    <th>Preaviso</th>
+                    <th>Días trabajados</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+
+    </div>
+</div>
+
+<div class="modal fade" id="formModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white ">
+                <h5 class="modal-title" id="exampleModalLabel">Crear liquidación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-2">
+                    <input id="txtId" type="hidden" value="0" />
+                    <div class="row g-2">
+
+                        <div class="col-sm-6">
+                            <label for="txtdescripcion" class="form-label">Descripción</label>
+                            <input type="text" class="form-control" id="txtdescripcion" aria-describedby="emailHelp" autocomplete="off">
+
+                        </div>
+
+                        <div class="col-sm-6">
+                            <label for="txtmontoPagar" class="form-label">Monto a pagar</label>
+                            <input type="text" class="form-control" id="txtmontoPagar" aria-describedby="emailHelp" autocomplete="off">
+
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="txtvacaNodis" class="form-label">Vacaciones no disfrutadas</label>
+                            <input type="text" class="form-control" id="txtvacaNodis" aria-describedby="emailHelp" autocomplete="off">
+
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="txtdiasTrabajados" class="form-label">Días trabajados</label>
+                            <input type="text" class="form-control" id="txtdiasTrabajados" aria-describedby="emailHelp" autocomplete="off">
+
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="txtaguinaldo" class="form-label">Aguinaldo</label>
+                            <input type="text" class="form-control" id="txtaguinaldo" aria-describedby="emailHelp" autocomplete="off">
+
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="txtpreaviso" class="form-label">Preaviso</label>
+                            <input type="text" class="form-control" id="txtpreaviso" aria-describedby="emailHelp" autocomplete="off">
+
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="txtcesantia" class="form-label">Cesantía</label>
+                            <input type="text" class="form-control" id="txtcesantia" aria-describedby="emailHelp" autocomplete="off">
+
+                        </div>
+
+                        <div class="col-sm-6">
+                            <label for="sbatipoLiquidacion" class="form-label">Tipo de liquidación</label>
+                            <select class="form-select" id="sbatipoLiquidacion">
+
+                                <option value="Despido con responsabilidad">Despido con responsabilidad</option>
+                                <option value="Despido sin responsabilidad">Despido con sin responsabilidad</option>
+                                <option value="Renuncia">Renuncia</option>
+
+                            </select>
+
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="txtIdPersona" class="form-label">Persona</label>
+                            <select class="form-select" id="txtIdPersona" required></select>
+                        </div>
+
+                        <div class="row mt-2">
+                            <div class="col-12">
+                                <div id="mensajeError" class="alert alert-danger" role="alert">
+                                    This is a danger alert—check it out!
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-primary" onclick="guardar()">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+
+@section scripts{
+    <script>
+         var tablaData;
+         var filaSelecionada;
+
+ //Para llenar la tabla, identificador para el tributi id = #
+
+        tablaData = $("#tabla").DataTable({
+
+            responsive: true,
+            ordering: false,
+            "ajax": {
+
+                url: '@Url.Action("listar_Liquidacion", "Liquidacion")',
+                type: "GET",
+                dataType: "json",
+
+            },
+
+            "columns": [
+
+
+                { "data": "id_Liquidacion" },
+                {
+                    "data": null,
+                    "render": function (data, type, row) {
+                        return row.nombre + ' ' + row.apellido;
+                    }
+                },
+                { "data": "descripcion" },
+                {
+                    "data": "monto_pagar",
+                    "render": function (data) {
+                        return formatearColones(data);
+                    }
+
+
+                },
+                { "data": "tipo_Liquidacion" },
+                {
+                    "data": "vacacionesNoDistrutadas",
+                    "render": function (data) {
+                        return formatearColones(data);
+                    }
+                },
+                {
+                    "data": "aguinaldo",
+                    "render": function (data) {
+                        return formatearColones(data);
+                    }
+                },
+                {
+                    "data": "cesantia",
+                    "render": function (data) {
+                        return formatearColones(data);
+                    }
+                },
+                {
+                    "data": "preaviso", "render": function (data) {
+                        return formatearColones(data);
+                    }
+                },
+
+
+                {
+                    "data": "diasTrabajados", "render": function (data) {
+                        return formatearColones(data);
+                    }
+                },
+
+
+
+                {
+                    "defaultContent": '<button class="btn btn-primary btn-sm  btn-editar">  <i class=" fas fa-pen me-1" > </i></button>' + '<button class="btn btn-danger btn-sm   btn-eliminar">  <i class=" fas fa-trash me-1" > </i></button>',
+                    "orderable": false,
+                    "searchable": false,
+                    "width": "90px"
+
+                },
+
+
+
+
+            ],
+            "language": {
+             "url": "https://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json"
+             }
+
+        });
+              //abrir el model emergente
+        function abrirModal(json) {
+
+            $("#txtId").val("0");
+            $("#txtdescripcion").val("");
+            $("#txtmontoPagar").val("");
+            $("#sbatipoLiquidacion").val("");
+            $("#txtIdPersona").val("");
+            $("#txtvacaNodis").val("");
+            $("#txtaguinaldo").val("");
+            $("#txtpreaviso").val("");
+            $("#txtcesantia").val("");
+            $("#txtdiasTrabajados").val("");
+
+
+            $("#mensajeError").hide();
+
+            $("#formModal").modal("show");
+            if (json != null) {
+                
+                $("#txtId").val(json.id_Liquidacion);
+                $("#txtdescripcion").val(json.descripcion);
+                $("#txtmontoPagar").val(json.monto_pagar);
+                $("#sbatipoLiquidacion").val(json.tipo_Liquidacion);
+                $("#txtIdPersona").val(json.id_Persona);
+                $("#txtvacaNodis").val(json.vacacionesNoDistrutadas);
+                $("#txtaguinaldo").val(json.aguinaldo);
+                $("#txtpreaviso").val(json.preaviso);
+                $("#txtcesantia").val(json.cesantia);
+                $("#txtdiasTrabajados").val(json.diasTrabajados);
+            }
+        }
+
+
+        $("#tabla tbody").on("click", '.btn-editar', function () {
+            var filaSeleccionada = $(this).closest("tr");
+
+
+            if (filaSeleccionada.hasClass("child")) {
+
+                filaSeleccionada = filaSeleccionada.prev();
+            }
+
+            var data = tablaData.row(filaSeleccionada).data();
+
+            abrirModal(data);
+        });
+
+
+        function guardar() {
+
+            var liquidacion = {
+                id_Liquidacion: $("#txtId").val(),
+                descripcion: $("#txtdescripcion").val(),
+                monto_pagar: $("#txtmontoPagar").val(),
+                tipo_Liquidacion: $("#sbatipoLiquidacion").val(),
+                id_Persona: $("#txtIdPersona").val(),
+                vacacionesNoDistrutadas: $("#txtvacaNodis").val(),
+                aguinaldo: $("#txtaguinaldo").val(),
+                preaviso:  $("#txtpreaviso").val(),
+                cesantia: $("#txtcesantia").val(),
+                diasTrabajados: $("#txtdiasTrabajados").val(),
+
+            };
+                jQuery.ajax({
+                url: '@Url.Action("guardarLiquidacion", "Liquidacion")',
+                    type: "POST",
+                    data: JSON.stringify({ obj: liquidacion }),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    $(".modal-body").LoadingOverlay("hide");
+                    //usuario nuev
+
+                    if (liquidacion.id_Liquidacion == 0) {
+                        if (data.resultado != 0) {
+                            liquidacion.id_Liquidacion = data.resultado;
+                            tablaData.row.add(liquidacion).draw(false);
+                            $("#formModal").modal("hide");
+                        } else {
+                            $("#mensajeError").text(data.mensaje);
+                            $("#mensajeError").show();
+                        }
+                    } else {
+                        //usuario editar
+                        if (data.resultado) {
+                            tablaData.row(filaSelecionada).data(liquidacion).draw(false); // Actualizar la fila existente en la tabla
+                            $("#formModal").modal("hide");
+                        } else {
+                            $("#mensajeError").text(data.mensaje);
+                            $("#mensajeError").show();
+                        }
+                    }
+                },
+                error: function (error) {
+                    $(".modal-body").LoadingOverlay("hide");
+                    $("#mensajeError").text("Error");
+                    $("#mensajeError").show();
+                },
+                beforeSend: function () {
+                    //Cuando realize algo durante la ejecución
+                    $(".modal-body").LoadingOverlay("show", {
+                        imageResizeFactor: 2,
+                        text: "Cargando.....",
+                        size: 14
+                    });
+                }
+            });
+            }
+
+
+
+
+         $("#tabla tbody").on("click", '.btn-eliminar', function () {
+
+
+             var liquidacionSelecionado = $(this).closest("tr");
+             if (liquidacionSelecionado.hasClass("child")) {
+                 liquidacionSelecionado = liquidacionSelecionado.prev();
+             }
+
+
+             var data = tablaData.row(liquidacionSelecionado).data();
+
+                        console.log(data);
+
+                        swal({
+                            title: "¿Desea eliminar el registro?",
+                            text: "¿Estas seguro?",
+                            type: "warning",
+                            showCancelButton: true,
+                            confirmButtonClass: "btn-primary",
+                            confirmButtonText: "Si",
+                            cancelButtonText: "No",
+
+
+                            closeOnConfirm: true
+                        },
+                            function () {
+
+                                jQuery.ajax({
+                                    url: '@Url.Action("eliminarLiquidacion", "Liquidacion")',
+                                    type: "POST",
+                                    data: JSON.stringify({ id: data.id_Liquidacion }),
+                                    dataType: "json",
+                                    contentType: "application/json; charset=utf-8",
+                                    success: function (data) {
+
+                                        if (data.resultado) {
+                                            tablaData.row(liquidacionSelecionado).remove().draw();
+                                        } else {
+                                            swal("No se puede eliminar",data.mensaje,"error")
+                                        }
+                                    },
+                                    error: function () {
+
+                                    },
+                                    beforeSend: function () {
+
+                                    },
+                                });
+
+                            });
+
+         });
+
+             function cargarPersona() {
+                $.ajax({
+                    url: '@Url.Action("getPersona", "Notificaciones")',
+                    type: "GET",
+                    dataType: "json",
+                    success: function (data) {
+                        var $select = $("#txtIdPersona");
+                        $select.empty(); // Limpiar opciones existentes
+                        $.each(data.data, function (index, item) {
+                            console.log(data);
+                            $select.append($('<option>', {
+
+                                value: item.id_Persona, // Asignar valor a la opción
+                                text: item.nombre +' '+item.apellido  // Texto que se muestra
+                            }));
+
+                        });
+                    },
+                    error: function (error) {
+                        console.error("Error al cargar persona:", error);
+                    }
+                });
+             }
+
+            // Llama a la función al cargar la página o cuando sea necesario
+            $(document).ready(function () {
+                cargarPersona();
+            });
+
+
+        function formatearColones(valor) {
+            return new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'CRC' }).format(valor);
+        }
+
+    </script>
+
+}

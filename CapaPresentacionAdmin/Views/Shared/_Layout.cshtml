@@ -1,0 +1,428 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - SagicorHR</title>
+    
+    @Styles.Render("~/Content/css")
+    @*  @Scripts.Render("~/bundles/modernizr")*@
+</head>
+<body class="sb-nav-fixed">
+
+
+    @{
+
+        var user = Session["UsuarioLogueado"] as CapaEntidad.persona;
+    }
+
+    <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
+        <!-- Navbar Brand-->
+        <a class="navbar-brand ps-3" href="index.html">RH</a>
+        <!-- Sidebar Toggle-->
+        <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i class="fas fa-bars"></i></button>
+        <!-- Navbar Search-->
+        @*<form class="d-none d-md-inline-block form-inline ms-auto me-0 me-md-3 my-2 my-md-0">
+                <div class="input-group">
+                    <input class="form-control" type="text" placeholder="Search for..." aria-label="Search for..." aria-describedby="btnNavbarSearch" />
+                    <button class="btn btn-primary" id="btnNavbarSearch" type="button"><i class="fas fa-search"></i></button>
+                </div>
+            </form>*/*@
+        <!-- Navbar-->
+
+        <ul class="navbar-nav ms-auto me-0 me-md-3 my-2 my-md-0">
+            @if (user != null && (user.tipo_Usuario.ToLower() == "admin" || user.tipo_Usuario.ToLower() == "lider" || user.tipo_Usuario.ToLower() == "recursos humanos" || user.tipo_Usuario.ToLower() == "gerente"))
+            {
+
+
+                <li class="nav-item dropdown">
+                    <a class="nav-link" href="#" id="notificacionCampana" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge bg-danger" id="notificacionBadge" style="display: none;">0</span> <!-- Contador de notificaciones -->
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificacionCampana">
+                        <h6 class="dropdown-header">Notificaciones</h6>
+                        <div id="notificacionesLista" style="max-height: 300px; overflow-y: auto;">
+                            <!-- Aquí se cargarán las notificaciones -->
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item text-center" href="@Url.Action("AprobarSolicitudes","AprobarSolicitudes")">Ver todas las solicitudes</a>
+                    </ul>
+                </li>
+
+
+
+
+            }
+            <!-- Notificación de la campana -->
+
+
+
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="fas fa-user fa-fw"></i></a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                    <li><a class="dropdown-item" href="@Url.Action("cambioContrasena","cambioContrasena")">Cambio de contraseña</a></li>
+                    <li><a class="dropdown-item" href="@Url.Action("Login","Login")">Cerrar sesion</a></li>
+                    <li><hr class="dropdown-divider" /></li>
+
+                </ul>
+            </li>
+        </ul>
+    </nav>
+    <div id="layoutSidenav">
+        <div id="layoutSidenav_nav">
+            <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
+                <div class="sb-sidenav-menu">
+                    <div class="nav">
+                        <div class="sb-sidenav-menu-heading">Menú</div>
+
+
+                        <a class="nav-link" href="@Url.Action("Index","Home")">
+                            <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
+                            Dashboard
+                        </a>
+                        <a class="nav-link" href="@Url.Action("SolicitarVacaciones","Vacaciones")">
+                            <div class="sb-nav-link-icon"><i class="fas fa-user"></i></div>
+                            Gestionar vacaciones
+                        </a>
+                        <a class="nav-link" href="@Url.Action("Permisos","SolicitudPermisos")">
+                            <div class="sb-nav-link-icon"><i class="fas fa-user"></i></div>
+                            Gestionar permiso
+                        </a>
+                        <a class="nav-link" href="@Url.Action("SolicitudIncapacidad","SolicitarIncapacidad")">
+                            <div class="sb-nav-link-icon"><i class="fas fa-user"></i></div>
+                            Gestionar incapacidad
+                        </a>
+
+
+
+
+
+                        @if (user != null && (user.tipo_Usuario.ToLower() == "admin" || user.tipo_Usuario.ToLower() == "lider" || user.tipo_Usuario.ToLower() == "recursos humanos" || user.tipo_Usuario.ToLower() == "contabilidad" || user.tipo_Usuario.ToLower() == "gerente"))
+                        {
+                            if (user.tipo_Usuario.ToLower() != "admin")
+                            {
+                                <a class="nav-link" href="@Url.Action("AprobarSolicitudes","AprobarSolicitudes")">
+                                    <div class="sb-nav-link-icon"><i class="fas fa-user"></i></div>
+                                    Aprobar solicitudes
+                                </a>
+                            }
+                            if (user.tipo_Usuario.ToLower() != "lider")
+                            {
+                                <a class="nav-link" href="@Url.Action("CalcularPlanilla","CalcularPlanilla")">
+                                    <div class="sb-nav-link-icon"><i class="fas fa-user"></i></div>
+                                    Calcular planilla
+                                </a>
+                                <a class="nav-link" href="@Url.Action("CalculoAguinaldo","CalculoAguinaldo")">
+                                    <div class="sb-nav-link-icon"><i class="fas fa-user"></i></div>
+                                    Calcular aguinaldo
+                                </a>
+
+                                <a class="nav-link" href="@Url.Action("calcularLiquidacion","calcularLiquidacion")">
+                                    <div class="sb-nav-link-icon"><i class="fas fa-user"></i></div>
+                                    Calcular liquidación
+                                </a>
+
+                            }
+
+
+
+
+
+
+
+                        }
+
+
+
+
+
+
+
+
+
+
+
+                        @if (user != null && (user.tipo_Usuario.ToLower() == "admin" || user.tipo_Usuario.ToLower() == "recursos humanos" || user.tipo_Usuario.ToLower() == "contabilidad" || user.tipo_Usuario.ToLower() == "gerente"))
+                        {
+
+
+
+
+
+                            <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayouts" aria-expanded="false" aria-controls="collapseLayouts">
+                                <div class="sb-nav-link-icon"><i class="fas fa-columns"></i></div>
+                                Mantenimientos
+                                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                            </a><div class="collapse" id="collapseLayouts" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
+                                <nav class="sb-sidenav-menu-nested nav">
+
+
+                                    @if (user != null && (user.tipo_Usuario.ToLower() == "admin" || user.tipo_Usuario.ToLower() == "gerente" || user.tipo_Usuario.ToLower() == "contabilidad"))
+                                    {
+
+                                        <a class="nav-link" href="@Url.Action("Deducciones","Deducciones")">
+                                            <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
+                                            Deducciones
+                                        </a>
+
+                                       
+
+                                        <a class="nav-link" href="@Url.Action("Aguinaldo","Aguinaldo")">
+                                            <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
+                                            Aguinaldo
+                                        </a>
+
+                                        <a class="nav-link" href="@Url.Action("Planilla","Planilla")">
+                                            <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
+                                            Planilla
+                                        </a>
+
+
+                                    }
+
+                                    @if (user != null && (user.tipo_Usuario.ToLower() == "admin" || user.tipo_Usuario.ToLower() == "recursos humanos" || user.tipo_Usuario.ToLower() == "gerente"))
+                                    {
+                                        <a class="nav-link" href="@Url.Action("Departamento","Departamento")">
+                                            <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
+                                            Departamento
+                                        </a>
+                                        <a class="nav-link" href="@Url.Action("Incapacidad","Incapacidad")">
+                                            <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
+                                            Incapacidad
+                                        </a>
+                                        <a class="nav-link" href="@Url.Action("Liquidacion","Liquidacion")">
+                                            <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
+                                            Liquidación
+                                        </a>
+                                        <a class="nav-link" href="@Url.Action("Notificaciones","Notificaciones")">
+                                            <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
+                                            Notificaciones
+                                        </a>
+                                        <a class="nav-link" href="@Url.Action("Permiso","Permiso")">
+                                            <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
+                                            Permisos
+                                        </a>
+                                        <a class="nav-link" href="@Url.Action("Index","Persona")">
+                                            <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
+                                            Persona
+                                        </a>
+
+                                        <a class="nav-link" href="@Url.Action("Puesto","Puesto")">
+                                            <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
+                                            Puesto
+                                        </a>
+                                        <a class="nav-link" href="@Url.Action("RegistroVaca","RegistroVaca")">
+                                            <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
+                                            Registro de vacaciones
+                                        </a>
+                                        <a class="nav-link" href="@Url.Action("Vacaciones","Vacaciones")">
+                                            <div class="sb-nav-link-icon"><i class="fas fa-table"></i></div>
+                                            Vacaciones
+                                        </a>
+
+
+
+                                    }
+
+
+                                </nav>
+                            </div>
+
+                        }
+
+                        @if (user != null && (user.tipo_Usuario.ToLower() == "admin" || user.tipo_Usuario.ToLower() == "lider" || user.tipo_Usuario.ToLower() == "recursos humanos" || user.tipo_Usuario.ToLower() == "contabilidad" || user.tipo_Usuario.ToLower() == "empleado" || user.tipo_Usuario.ToLower() == "gerente"))
+                        {
+
+
+                            <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapsePages" aria-expanded="false" aria-controls="collapsePages">
+                                <div class="sb-nav-link-icon"><i class="fas fa-book-open"></i></div>
+                                Consultas y reportes
+                                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                            </a>
+                            <div class="collapse" id="collapsePages" aria-labelledby="headingTwo" data-bs-parent="#sidenavAccordion">
+                                <nav class="sb-sidenav-menu-nested nav accordion" id="sidenavAccordionPages">
+                                    <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#pagesCollapseAuth" aria-expanded="false" aria-controls="pagesCollapseAuth">
+                                        Consultas
+                                        <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                                    </a>
+                                    <div class="collapse" id="pagesCollapseAuth" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordionPages">
+                                        <nav class="sb-sidenav-menu-nested nav">
+                                            <a class="nav-link" href="@Url.Action("ConsultaSalario","ConsultaSalario")">Consulta de salarios</a>
+                                            <a class="nav-link" href="@Url.Action("ConsultaVacaciones","ConsultaVacaciones")">Consultas varias</a>
+
+                                        </nav>
+                                    </div>
+                                    @if (user != null && (user.tipo_Usuario.ToLower() == "admin" || user.tipo_Usuario.ToLower() == "recursos humanos" || user.tipo_Usuario.ToLower() == "gerente"))
+                                    {
+
+
+                                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#pagesCollapseError" aria-expanded="false" aria-controls="pagesCollapseError">
+                                            Reportes
+                                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                                        </a>
+                                        <div class="collapse" id="pagesCollapseError" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordionPages">
+                                            <nav class="sb-sidenav-menu-nested nav">
+                                                <a class="nav-link" href="@Url.Action("ReporteUsuarios","ReporteUsuarios")">Reporte de usuario por departamento</a>
+                                                <a class="nav-link" href="@Url.Action("ReporteLiquidacion","ReporteLiquidacion")">Reporte de  liquidación</a>
+                                                <a class="nav-link" href="@Url.Action("ReporteRegistroVaca","ReporteRegistroVaca")">Reporte registro de vacaciones</a>
+                                            </nav>
+                                        </div>
+
+
+                                    }
+
+                                </nav>
+                            </div>
+
+
+
+
+
+
+
+
+
+                        }
+
+
+
+
+
+
+
+                    </div>
+
+
+                </div>
+                <div class="sb-sidenav-footer">
+                    <div class="small">Inicio de sesión:</div>
+                    Sagicor RH
+                </div>
+            </nav>
+        </div>
+        <div id="layoutSidenav_content">
+            <main>
+                <div class="container-fluid px-4">
+                    @RenderBody()
+                </div>
+            </main>
+            <footer class="py-4 bg-light mt-auto">
+                <div class="container-fluid px-4">
+                    <div class="d-flex align-items-center justify-content-between small">
+                        <div class="text-muted">Copyright &copy; Your Website 2024</div>
+                        <div>
+
+                        </div>
+                    </div>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+
+
+
+    @*
+
+
+
+
+        <li>@Html.ActionLink("Inicio", "Index", "Home", new { area = "" }, new { @class = "nav-link" })</li>
+        <li>@Html.ActionLink("Acerca de", "About", "Home", new { area = "" }, new { @class = "nav-link" })</li>
+        <li>@Html.ActionLink("Contacto", "Contact", "Home", new { area = "" }, new { @class = "nav-link" })</li>
+
+    *@
+
+
+
+
+
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/complementos")
+    @Scripts.Render("~/bundles/bootstrap")
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
+
+    <script>
+$(document).ready(function() {
+    // Función para cargar notificaciones
+    function cargarNotificaciones() {
+        $.ajax({
+            url: '@Url.Action("ObtenerNotificaciones", "Notificaciones")',
+            type: 'GET',
+            success: function (response) {
+                console.log("Respuesta del servidor:", response);
+
+                if (response.success && response.resultado) {
+                    console.log("Datos de notificaciones:", response.resultado);
+
+                    // Limpiar la lista de notificaciones antes de agregar nuevas
+                    $('#notificacionesLista').empty();
+
+                    // Mostrar cada notificación en la lista y como notificación emergente
+                    $.each(response.resultado, function(index, notificacion) {
+                        $('#notificacionesLista').append(
+                            `<li>
+                                <strong>${notificacion.tipo_Notificacion}</strong><br>
+                                Nombre: ${notificacion.nombre} ${notificacion.apellido}<br>
+                                Fechas solicitadas: ${notificacion.fechasSolicitadas}<br>
+                                Días solicitados: ${notificacion.dias_Solicitado}<br>
+                                Horas solicitadas: ${notificacion.horas_solicitadas}<br>
+                                Estado: ${notificacion.estado ? 'Leído' : 'No leído'}
+                            </li><hr>`
+                        );
+                    });
+
+                    $('#notificacionBadge').text(response.resultado.length).show();
+
+                    // Mostrar notificaciones emergentes solo al iniciar sesión
+                    mostrarNotificacionEmergente(response.resultado);
+                } else {
+                    $('#notificacionBadge').text(0).show(); // Si no hay notificaciones, mostrar 0
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("Error en la solicitud AJAX:", error);
+                $('#notificacionBadge').text(0).show(); // Manejo de error, mostrar 0
+            }
+        });
+    }
+
+    // Función para mostrar notificación emergente solo al iniciar sesión
+    function mostrarNotificacionEmergente(notificaciones) {
+        if (!sessionStorage.getItem('notificacionesMostradas')) {
+            notificaciones.forEach((notificacion) => {
+                new Notification("Nueva notificación", {
+                    body: `${notificacion.tipo_Notificacion}: ${notificacion.nombre} ${notificacion.apellido}`
+                });
+            });
+            sessionStorage.setItem('notificacionesMostradas', 'true'); // Marcar como mostradas en la sesión
+        }
+    }
+
+    // Solicitar permiso para notificaciones emergentes
+    if (Notification.permission !== "granted") {
+        Notification.requestPermission().then((permission) => {
+            if (permission === "granted") {
+                cargarNotificaciones(); // Cargar notificaciones al iniciar sesión si se permite
+            }
+        });
+    } else {
+        cargarNotificaciones(); // Cargar notificaciones directamente si el permiso ya fue otorgado
+    }
+
+    // Evento de clic para recargar notificaciones en el botón de campana
+    $('#notificacionCampana').click(function() {
+        cargarNotificaciones();
+    });
+});
+    </script>
+
+    @RenderSection("scripts", required: false)
+</body>
+</html>

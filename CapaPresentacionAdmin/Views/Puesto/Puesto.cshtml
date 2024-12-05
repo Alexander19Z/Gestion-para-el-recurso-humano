@@ -1,0 +1,304 @@
+﻿
+@{
+    ViewBag.Title = "Puesto";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+
+<ol class="breadcrumb mb-4 mt-4">
+    <li class="breadcrumb-item"><a href="#">Mantenimiento</a></li>
+    <li class="breadcrumb-item active">Puesto</li>
+</ol>
+
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-user"></i> Puesto
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-12">
+                <button type="button" class="btn btn-success" onclick="abrirModal(null)">Crear nuevo</button>
+            </div>
+        </div>
+
+
+        <hr />
+
+        <table id="tabla" class="display cell-border" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Id Puesto</th>
+                    <th>Descripción</th>
+                    <th>Salario bruto</th>
+                    <th>Lider</th>
+                    <th>Acción</th>
+
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+
+    </div>
+</div>
+
+<div class="modal fade" id="formModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white ">
+                <h5 class="modal-title" id="exampleModalLabel">Crear puesto</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-2">
+                    <input id="txtId" type="hidden" value="0" />
+
+                    <div class="row g-2">
+
+
+                        <div class="col-sm-6">
+                            <label for="txtDecripcion" class="form-label">Descripción</label>
+                            <input type="text" class="form-control" id="txtDecripcion" aria-describedby="emailHelp" autocomplete="off">
+
+                        </div>
+
+                        <div class="col-sm-6">
+                            <label for="txtSalarioBruto" class="form-label">Salario bruto</label>
+                            <input type="text" class="form-control" id="txtSalarioBruto" aria-describedby="emailHelp" autocomplete="off">
+
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="txtLider" class="form-label">Lider</label>
+                            <select class="form-select" id="txtLider" required>
+
+                                <option value="1">Si</option>
+                                <option value="0">No</option>
+
+                            </select>
+                        </div>
+
+                            <div class="row mt-2">
+                                <div class="col-12">
+                                    <div id="mensajeError" class="alert alert-danger" role="alert">
+                                        This is a danger alert—check it out!
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                        </div>
+                    </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-primary" onclick="guardar()">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+
+@section scripts{
+    <script>
+         var tablaData;
+         var filaSelecionada;
+
+ //Para llenar la tabla, identificador para el tributi id = #
+
+        tablaData = $("#tabla").DataTable({
+
+            responsive: true,
+            ordering: false,
+            "ajax": {
+
+                url: '@Url.Action("listar_Puesto", "Puesto")',
+                type: "GET",
+                dataType: "json",
+
+            },
+
+            "columns": [
+                { "data": "id_Puesto" },
+                { "data": "descripcion" },
+                {
+                    "data": "salario_Bruto",
+                    "render": function(data){
+                        return formatearColones(data);
+                    }
+                },
+                {
+                    "data": "lider", "render": function (valor) {
+                        if (valor != true) {
+
+                            return '<span class="badge bg-danger">No</span>'
+
+                        } else {
+                            return '<span class="badge bg-success">Si</span>'
+                        }
+
+
+
+                    }
+                },
+                {
+                    "defaultContent": '<button class="btn btn-primary btn-sm btn-editar">  <i class="fas fa-pen me-1"></i></button>' + '<button class="btn btn-danger btn-sm btn-eliminar">  <i class="fas fa-trash me-1"></i></button>',
+                    "orderable": false,
+                    "searchable": false,
+                    "width": "90px"
+                },
+            ],
+            "language": {
+                "url": "https://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json"
+            }
+        });
+              //abrir el model emergente
+        function abrirModal(json) {
+            $("#txtId").val("0");
+            $("#txtDecripcion").val("");
+            $("#txtSalarioBruto").val("");
+            $("#txtLider").val("");
+            $("#mensajeError").hide();
+
+            $("#formModal").modal("show");
+            if (json != null) {
+                
+                $("#txtId").val(json.id_Puesto);
+                $("#txtDecripcion").val(json.descripcion);
+                $("#txtSalarioBruto").val(json.salario_Bruto);
+                $("#txtLider").val(json.lider);
+            }
+        }
+
+
+        $("#tabla tbody").on("click", '.btn-editar', function () {
+            filaSelecionada = $(this).closest("tr");
+            var data = tablaData.row(filaSelecionada).data();
+            abrirModal(data);
+        });
+
+
+
+        function guardar() {
+
+
+            var puesto = {
+                id_Puesto: $("#txtId").val(),
+                descripcion: $("#txtDecripcion").val(),
+                salario_Bruto: $("#txtSalarioBruto").val(),
+                lider: $("#txtLider").val()
+
+            };
+                jQuery.ajax({
+                url: '@Url.Action("guardarPuesto", "Puesto")',
+                    type: "POST",
+                    data: JSON.stringify({ obj: puesto }),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    $(".modal-body").LoadingOverlay("hide");
+                    //usuario nuev
+                   
+                    if (puesto.id_Puesto == 0) {
+                       
+                            if (data.resultado != 0) {
+                                puesto.id_Puesto = data.resultado;
+                                tablaData.row.add(puesto).draw(false);
+                                $("#formModal").modal("hide");
+                            } else {
+                                $("#mensajeError").text(data.mensaje);
+                                $("#mensajeError").show();
+                            }
+                    } else {
+                            if (data.resultado) {
+                                tablaData.row(filaSelecionada).data(puesto).draw(false);
+                                $("#formModal").modal("hide");
+                            } else {
+                                $("#mensajeError").text(data.mensaje);
+                                $("#mensajeError").show();
+                            }
+                        }
+                    },
+                error: function (error) {
+                    $(".modal-body").LoadingOverlay("hide");
+                    $("#mensajeError").text("Error");
+                    $("#mensajeError").show();
+                },
+                beforeSend: function () {
+                    //Cuando realize algo durante la ejecución
+                    $(".modal-body").LoadingOverlay("show", {
+                        imageResizeFactor: 2,
+                        text: "Cargando.....",
+                        size: 14
+                    });
+                }
+            });
+            }
+
+
+
+
+
+         $("#tabla tbody").on("click", '.btn-eliminar', function () {
+
+
+                    var puestoSelecionado = $(this).closest("tr");
+
+             var data = tablaData.row(puestoSelecionado).data();
+
+                        console.log(data);
+
+                        swal({
+                            title: "¿Desea eliminar el registro?",
+                            text: "¿Estas seguro?",
+                            type: "warning",
+                            showCancelButton: true,
+                            confirmButtonClass: "btn-primary",
+                            confirmButtonText: "Si",
+                            cancelButtonText: "No",
+
+
+                            closeOnConfirm: true
+                        },
+                            function () {
+
+                                jQuery.ajax({
+                                    url: '@Url.Action("eliminarPuesto", "Puesto")',
+                                    type: "POST",
+                                    data: JSON.stringify({ id: data.id_Puesto }),
+                                    dataType: "json",
+                                    contentType: "application/json; charset=utf-8",
+                                    success: function (data) {
+
+                                        if (data.resultado) {
+                                            tablaData.row(puestoSelecionado).remove().draw();
+                                        } else {
+                                            swal("No se puede eliminar",data.mensaje,"error")
+                                        }
+                                    },
+                                    error: function () {
+
+                                    },
+                                    beforeSend: function () {
+
+                                    },
+                                });
+
+                            });
+
+         });
+
+        function formatearColones(valor) {
+            return new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'CRC' }).format(valor);
+        }
+
+
+    </script>
+
+}
+
+

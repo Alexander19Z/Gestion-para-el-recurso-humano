@@ -1,0 +1,290 @@
+﻿
+@{
+    ViewBag.Title = "CalcularPlanilla";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+
+<ol class="breadcrumb mb-4 mt-4">
+    <li class="breadcrumb-item"><a href="index.html">Cálculo de planilla</a></li>
+    <li class="breadcrumb-item active">Planilla</li>
+</ol>
+
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-user"></i> Planilla
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-12">
+                <button type="button" class="btn btn-success btn-Calcular"  id="btn-Calcular">Cálcular planilla</button>
+                <button type="button" class="btn btn-success btn-ArchivoExcel" >Guardar en archivo Excel</button>
+            </div>
+        </div>
+
+
+        <hr />
+
+        <table id="tabla" class="display cell-border" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Id planilla</th>
+                    <th>Persona</th>
+                    <th>Salario total</th>
+                    <th>Deducciones CCSS</th>
+                    <th>Deducciones permisos</th>
+                    <th>Deducciones impuestos de renta</th>
+                    <th>Deducciones por Incapacidad</th>
+
+                    <th>Deducciones varias</th>
+                    <th>Salario a pagar </th>
+                    <th>Fecha creación</th>
+                    <th>Fecha de pago</th>
+                  
+
+
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+
+    </div>
+</div>
+
+
+
+
+@section scripts{
+    <script>
+
+
+
+
+
+         var tablaData;
+         var filaSelecionada;
+
+ //Para llenar la tabla, identificador para el tributi id = #
+
+        tablaData = $("#tabla").DataTable({
+            responsive: true,
+            ordering: false,
+            "ajax": {
+
+                 url: '@Url.Action("listar_Planilla", "CalcularPlanilla")',
+                type: "GET",
+                dataType: "json",
+
+            },
+
+            "columns": [
+
+
+                { "data": "id_Planilla" },
+                {
+                    "data": null,
+                    "render": function (data, type, row) {
+                        console.log(row);
+                        return row.nombre + ' ' + row.apellido;
+                    }
+
+
+                },
+                {
+                    "data": "salario_Total",
+                    "render": function(data){
+                    return formatearColones(data);
+                    }
+
+                },
+                {
+                    "data": "deduccion_CCSS",
+                    "render": function (data) {
+                        return formatearColones(data);
+                    }
+                },
+                {
+                    "data": "deduccion_permiso",
+                    "render": function (data) {
+                        return formatearColones(data);
+                    }
+                },
+                {
+                    "data": "deduccion_InpuestoRenta",
+                    "render": function (data) {
+                        return formatearColones(data);
+                    }
+                },
+                {
+                    "data": "deduccion_Incapacidad",
+                    "render": function (data) {
+                        return formatearColones(data);
+                    }
+                },
+              
+               
+                {
+                    "data": "deducciones_Varias",
+                    "render": function (data) {
+                        return formatearColones(data);
+                    }
+                },
+                {
+                    "data": "salario_Pagar",
+                    "render": function (data) {
+                        return formatearColones(data);
+                    }
+                },
+
+                {
+
+                    "data": "fecha_creacion"
+                },
+
+                {
+                    "data": "fecha_Pago"
+                },
+
+
+
+            ],
+            "language": {
+
+              "url": "https://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json"
+            }
+        });
+
+
+
+        $("#btn-Calcular").click(function() {
+                 $.ajax({
+                     url: '@Url.Action("calculoPlanilla", "CalcularPlanilla")',
+                     type: "GET",
+                     success: function(data) {
+                         swal({
+                             title: "Cálculo de planilla",
+                             text: "¿Está seguro de que desea realizar el cálculo? Esto afectará los días de vacaciones. Antes de proceder, revise las solicitudes del personal.",
+                             type: "warning",
+                             showCancelButton: true,
+                             confirmButtonClass: "btn-warning",
+                             confirmButtonText: "Si, realizar el cálculo ",
+                             closeOnConfirm: false
+                         },
+                             function () {
+                                 setTimeout(() => {
+                                     location.reload();
+                                 }, 2000); // Espera 2 segundos
+
+                             });
+
+                     },
+                     error: function(xhr, status, error) {
+                         console.error("Error al calcular el aguinaldo:", error);
+                     }
+                 });
+             });
+      
+
+
+
+
+
+
+
+
+
+        @*function calcularPlanilla() {
+
+
+            $.ajax({
+                url: '@Url.Action("calculoPlanilla", "CalcularPlanilla")',
+                type: 'POST',
+                dataType: 'json',
+                success: function (response) {
+                    if (response.data) {
+                        swal("Cálculo realizado", "Puedes verificar en la siguiente tabla", "success");
+
+                        // Recarga la página después de un corto retraso para que el usuario pueda ver el mensaje
+                        setTimeout(() => {
+                            location.reload();
+                        }, 2000); // Espera 2 segundos
+                    } else {
+                        swal("Error", "Contacta al administrador del sistema)", "error");
+                    }
+
+                },
+                error: function (error) { },
+                beforeSend: function () { }
+
+
+
+
+
+
+            });
+        }*@
+
+
+        function GuardarArchivoExcel(){
+               window.location.href = '@Url.Action("GuardarArchivo", "CalcularPlanilla")';
+        }
+
+
+
+
+
+           function cargarPersona() {
+                $.ajax({
+                    url: '@Url.Action("getPersona", "Planilla")',
+                    type: "GET",
+                    dataType: "json",
+                    success: function (data) {
+                        var $select = $("#txtidPersona");
+                        $select.empty(); // Limpiar opciones existentes
+                        $.each(data.data, function (index, item) {
+                            console.log(data);
+                            $select.append($('<option>', {
+
+                                value: item.id_Persona, // Asignar valor a la opción
+                                text: item.nombre +' '+item.apellido  // Texto que se muestra
+                            }));
+
+                        });
+                    },
+                    error: function (error) {
+                        console.error("Error al cargar persona:", error);
+                    }
+                });
+           }
+
+        //Para darle el formato a la fecha
+        function formatearFecha(fechaString) {
+            var fechaMilisegundos = parseInt(fechaString.substr(6));
+            var fecha = new Date(fechaMilisegundos);
+            var fechaFormateada = fecha.toISOString().split('T')[0];
+            return fechaFormateada;
+        }
+
+        function formatearColones(valor) {
+            return new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'CRC' }).format(valor);
+        }
+
+        $(document).ready(function () {
+
+            cargarPersona();
+        });
+
+        $(".btn-Calcular").on("click", function () {
+            calcularPlanilla();
+        });
+
+        $(".btn-ArchivoExcel").on("click", function () {
+            GuardarArchivoExcel();
+        });
+
+    </script>
+
+}
+

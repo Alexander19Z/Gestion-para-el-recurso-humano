@@ -1,0 +1,189 @@
+﻿
+
+<style>
+
+    /*        .container {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        height: 100vh;
+        flex-wrap: wrap;
+        padding: 20px;
+    }*/
+
+    .card {
+        width: 100%;
+        max-width: 300px;
+        margin: 10px;
+        margin-right: 100px;
+        box-sizing: border-box;
+        border-radius: 15px;
+        Bordes redondeados box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        Sombra suave background-color: #fff;
+        Fondo blanco
+    }
+
+    /*.card-title {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #2C3E50;*/ /* Color de texto */
+    /*}
+
+    .card-text {
+        font-size: 1rem;
+        color: #7F8C8D;*/ /* Color gris suave */
+    /*}
+
+    .notis {
+        width: 25rem;
+        height: 300px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        margin-left: 10px;
+        border-radius: 15px;*/ /* Bordes redondeados */
+    /*box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);*/ /* Sombra suave */
+    /*background-color: #f8f9fa;*/ /* Fondo ligeramente gris */
+    /*padding: 15px;*/ /* Añadir padding */
+    /*}*/
+
+    img[name="logo"] {
+        max-width: 500px;
+        height: auto;
+        margin-bottom: 20px;
+        border-radius: 10px; /* Opcional: redondear bordes */
+    }
+
+    ul {
+        padding-left: 20px;
+    }
+
+    li {
+        margin-bottom: 10px;
+        font-size: 1rem;
+        color: #34495E; /* Color de texto */
+    }
+
+    /*@@media (max-width: 768px) {
+        .container {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        img[name="logo"] {
+            margin-left: 0;
+        }
+
+        .card {
+            margin-right: 0;
+            margin-top: 0;
+        }
+    }
+
+        .card-img-top {
+            width: 50%;*/ /* Asegura que la imagen no exceda el ancho del card */
+    /*height: auto;*/ /* Mantiene la proporción de la imagen */
+    /*max-height: 150px;*/ /* Ajusta la altura máxima según sea necesario */
+    /*margin-top:10px;
+            margin-left:80px;
+            object-fit: cover;*/ /* Asegura que la imagen se ajuste bien dentro del contenedor */
+    /*border-radius: 15px 15px 0 0;*/ /* Bordes redondeados en la parte superior */ /* Asegura que la imagen se recorte si es necesario para llenar el contenedor */
+    /*}
+
+    @@media (min-width: 769px) {
+        .container {
+            flex-direction: row;
+        }
+
+        .notis {
+            margin-left: 40px;
+        }
+
+        img[name="logo"] {
+            margin-left: 300px;
+        }
+    }
+
+
+        #notificacionesLista {
+            list-style: none;*/ /* Elimina el estilo de lista predeterminado */
+    /*padding: 0;*/ /* Elimina el padding */
+    /*margin: 0;*/ /* Elimina el margen */
+    /*}
+
+        #notificacionesLista li {
+            background: #f9f9f9;*/ /* Color de fondo suave */
+    /*border: 1px solid #ddd;*/ /* Borde gris claro */
+    /*border-radius: 5px;*/ /* Bordes redondeados */
+    /*padding: 15px;*/ /* Espaciado interno */
+    /*margin-bottom: 10px;*/ /* Espaciado entre notificaciones */
+    /*transition: background-color 0.3s;*/ /* Transición suave para el hover */
+    /*}
+
+            #notificacionesLista li:hover {
+                background: #f0f0f0;*/ /* Color de fondo más oscuro al pasar el mouse */
+    /*}*/
+
+</style>
+
+@{
+    ViewBag.Title = "Inicio";
+    var notificacionesEmpleado = Session["Notificaciones"] as List<CapaEntidad.notificaciones>;
+}
+
+<main class="container mt-5">
+    <!-- Logo centrado -->
+    <div class="row justify-content-center mb-4">
+        <img src="~/img/" name="logo" class="img-fluid" alt="Logo Sagicor" />
+    </div>
+
+    <!-- Tarjetas de gestión -->
+    <div class="row justify-content-center text-center">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body">Gestionar vacaciones</div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a class="small text-white stretched-link" href="@Url.Action("SolicitarVacaciones","Vacaciones")">Más detalles</a>
+                    <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card bg-warning text-white">
+                <div class="card-body">Gestionar permisos</div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a class="small text-white stretched-link" href="@Url.Action("Permisos","SolicitudPermisos")">Más detalles</a>
+                    <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card bg-success text-white">
+                <div class="card-body">Gestionar incapacidades</div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a class="small text-white stretched-link" href="@Url.Action("SolicitudIncapacidad","SolicitarIncapacidad")">Más detalles</a>
+                    <div class="small text-white"><i class="fas fa-angle-right"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- Tarjeta de usuario y notificaciones -->
+    <div class="row justify-content-center">
+        <div class="col-lg-4 mb-4">
+            <div class="card text-center">
+                <img src="~/img/user.png" class="card-img-top img-fluid mx-auto d-block" alt="Foto de usuario">
+                <div class="card-body">
+                    <h5 class="card-title">Usuario</h5>
+                    <p class="card-text"><i>Nombre: @Session["NombreCompleto"]</i></p>
+                    <p class="card-text"><i>Departamento: @Session["Departamento"]</i></p>
+                    <p class="card-text"><i>Puesto: @Session["Puesto"]</i></p>
+                </div>
+            </div>
+        </div>
+
+       
+    </div>
+</main>
+>

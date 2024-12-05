@@ -1,0 +1,222 @@
+﻿
+@{
+    ViewBag.Title = "CalculoAguinaldo";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@{
+    ViewBag.Title = "CalculoAguinaldo";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<ol class="breadcrumb mb-4 mt-4">
+    <li class="breadcrumb-item"><a href="index.html">Cálculo de aguinaldo</a></li>
+    <li class="breadcrumb-item active">Aguinaldo</li>
+</ol>
+
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-user"></i> Aguinaldo
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-12">
+                <button type="button" class="btn btn-success" id="btnCalcular">Calcular aguinaldo</button>
+                <button type="button" class="btn btn-success btn-ArchivoExcel">Guardar en archivo Excel</button>
+
+            </div>
+        </div>
+
+
+        <hr />
+
+        <table id="tabla" class="display cell-border" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Persona</th>
+
+                    <th>Dicimebre año anterior</th>
+                    <th>Enero</th>
+                    <th>Febrero</th>
+                    <th>Marzo</th>
+                    <th>Abril</th>
+                    <th>Mayo</th>
+                    <th>Junio</th>
+                    <th>Julio</th>
+                    <th>Agosto</th>
+                    <th>Septiembre</th>
+                    <th>Octubre</th>
+                    <th>Noviembre</th>
+                    <th>Tatal salarios</th>
+                    <th>Aguinaldo por pagar</th>
+
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+
+    </div>
+</div>
+
+
+
+
+
+@section scripts{
+    <script>
+           $(document).ready(function() {
+            // Inicializar DataTable sin datos iniciales
+            var tablaData = $("#tabla").DataTable({
+                responsive: true, // Hace que la tabla se adapte a diferentes tamaños de pantalla
+                ordering: false, // Deshabilita la ordenación de las columnas
+                "columns": [
+                    {
+                        "data": null,
+                        "render": function (data, type, row) {
+                            return row.nombre + ' ' + row.apellido;
+                        }
+                    },
+                    {
+                        "data": "Diciembre_Anterior",
+                        "render": function (data) {
+                            return formatearColones(data);
+                        }
+                    },
+                    {
+                        "data": "Enero",
+                        "render": function (data) {
+                            return formatearColones(data);
+                        }
+                    },
+                    {
+                        "data": "Febrero",
+                        "render": function (data) {
+                            return formatearColones(data);
+                        }
+                    },
+                    {
+                        "data": "Marzo",
+                        "render": function (data) {
+                            return formatearColones(data);
+                        }
+                    },
+                    {
+                        "data": "Abril",
+                        "render": function (data) {
+                            return formatearColones(data);
+                        }
+                    },
+                    {
+                        "data": "Mayo",
+                        "render": function (data) {
+                            return formatearColones(data);
+                        }
+                    },
+                    {
+                        "data": "Junio",
+                        "render": function (data) {
+                            return formatearColones(data);
+                        }
+                    },
+                    {
+                        "data": "Julio",
+                        "render": function (data) {
+                            return formatearColones(data);
+                        }
+                    },
+                    {
+                        "data": "Agosto",
+                        "render": function (data) {
+                            return formatearColones(data);
+                        }
+                    },
+                    {
+                        "data": "Septiembre",
+                        "render": function (data) {
+                            return formatearColones(data);
+                        }
+                    },
+                    {
+                        "data": "Octubre",
+                        "render": function (data) {
+                            return formatearColones(data);
+                        }
+                    },
+                    {
+                        "data": "Noviembre",
+                        "render": function (data) {
+                            return formatearColones(data);
+                        }
+                    },
+                    {
+                        "data": "TotalAnio",
+                        "render": function (data) {
+                            return formatearColones(data);
+                        }
+                    },
+                    {
+                        "data": "aguinaldoPagar",
+                        "render": function (data) {
+                            return formatearColones(data);
+                        }
+                    }
+                ],
+                "language": {
+                    "url": "https://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json"
+                }
+            });
+
+
+                $("#btnCalcular").click(function() {
+                    $.ajax({
+                        url: '@Url.Action("listarMeses", "CalculoAguinaldo")',
+                        type: "GET",
+                        success: function(data) {
+                            if (!data || data.length === 0) {  // Verificar si la data es null o vacía
+                                swal({
+                                    title: "Sin datos",
+                                    text: "No hay datos disponibles para realizar el cálculo.",
+                                    type: "warning",
+                                    confirmButtonText: "Aceptar"
+                                });
+                            } else {
+                                swal({
+                                    title: "Cálculo de aguinaldos",
+                                    text: "¿Estás seguro que deseas realizar el cálculo?",
+                                    type: "warning",
+                                    showCancelButton: true,
+                                    confirmButtonClass: "btn-warning",
+                                    confirmButtonText: "Sí, realizar el cálculo",
+                                    closeOnConfirm: false
+                                }, function () {
+                                    tablaData.clear().rows.add(data).draw();
+                                    swal("Éxito", "Los cálculos fueron realizados.", "success");
+                                });
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error("Error al calcular el aguinaldo:", error);
+                        }
+                    });
+                });
+           });
+
+       function GuardarArchivoExcel(){
+           window.location.href = '@Url.Action("GuardarArchivoAguinaldo", "CalculoAguinaldo")';
+
+        }
+
+        function formatearColones(valor) {
+            return new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'CRC' }).format(valor);
+        }
+
+        $(".btn-ArchivoExcel").on("click", function () {
+            GuardarArchivoExcel();
+        });
+    </script>
+
+
+
+    }

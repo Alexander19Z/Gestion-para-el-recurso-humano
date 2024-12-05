@@ -1,0 +1,135 @@
+﻿
+@{
+    ViewBag.Title = "ReporteUsuarios";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+@{
+    ViewBag.Title = "Reporte de usuario";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<ol class="breadcrumb mb-4 mt-4">
+    <li class="breadcrumb-item"><a href="#">Reportes</a></li>
+    <li class="breadcrumb-item active">Reportes</li>
+</ol>
+
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-user"></i> Reportes de usuarios
+    </div>
+    <div class="card-body">
+        <div class="row align-items-center mb-4">
+            <div class="col-sm-6">
+                <label for="txtDepartamneto" class="form-label">Seleccionar un departamento</label>
+                <select class="form-select" id="txtDepartamneto" required></select>
+            </div>
+            <div class="col-auto mt-4">
+                <button type="button" class="btn btn-success" id="btnBuscar">Buscar</button>
+            </div>
+            <div class="col-auto mt-4">
+                <button type="button" class="btn btn-success btn-ArchivoPDF" id="btn-ArchivoPDF">Descargar reporte</button>
+            </div>
+        </div>
+
+
+        <hr />
+
+        <table id="tabla" class="display cell-border" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Apellido</th>
+                    <th>Departamento</th>
+                    <th>Puesto</th>
+
+
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+
+    </div>
+</div>
+
+
+
+
+
+@section scripts{
+    <script>
+        var tablaData;
+
+        $(document).ready(function () {
+            cargarDepartamento();
+
+            // Inicializar la tabla vacía (sin datos)
+            tablaData = $("#tabla").DataTable({
+                responsive: true,
+                ordering: false,
+                "ajax": {
+                    url: '@Url.Action("listar_ReportesUsuarios", "ReporteUsuarios")',
+                    type: "GET",
+                    data: function(d) {
+                        d.departamento = $('#txtDepartamneto').val(); // Enviar el departamento seleccionado
+                    },
+                    deferLoading: 0 // No cargar datos al inicio
+                },
+                "columns": [
+                    { "data": "nombre" },
+                    { "data": "apellido" },
+                    { "data": "departamento" },
+                    { "data": "puesto" }
+                ],
+                "language": {
+                    "url": "https://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json"
+                }
+            });
+
+
+            $('#btnBuscar').on('click', function () {
+                if ($('#txtDepartamneto').val()) {
+                    tablaData.ajax.reload();
+                    swal("Realizado", "", "success");
+                } else {
+                    swal("Seleccione un departamento", "", "error");
+                }
+            });
+        });
+
+        function cargarDepartamento() {
+            $.ajax({
+                url: '@Url.Action("getDepartamento", "ReporteUsuarios")',
+                type: "GET",
+                dataType: "json",
+                success: function (data) {
+                    var $select = $("#txtDepartamneto");
+                    $select.empty();
+                    $select.append('<option value="">Departamentos</option>');
+                    $.each(data.data, function (index, item) {
+                        $select.append($('<option>', {
+                            value: item.descripcion,
+                            text: item.descripcion
+                        }));
+                    });
+                },
+                error: function (error) {
+                    console.error("Error al cargar los departamentos:", error);
+                }
+            });
+        }
+
+        $('#btn-ArchivoPDF').on('click', function () {
+             var departamento = $('#txtDepartamneto').val();
+             if (departamento) {
+               window.location.href = '@Url.Action("DescargarReporteUsuarios", "ReporteUsuarios")?departamento=' + departamento;
+             } else {
+                 swal("Seleccione un departamento", "", "error");
+    }
+});
+    </script>
+}
+
+

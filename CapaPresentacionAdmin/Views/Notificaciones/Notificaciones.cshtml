@@ -1,0 +1,411 @@
+﻿
+@{
+    ViewBag.Title = "Notificaciones";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<ol class="breadcrumb mb-4 mt-4">
+    <li class="breadcrumb-item"><a href="#">Mantenimiento</a></li>
+    <li class="breadcrumb-item active">Notificaciones</li>
+</ol>
+
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-user"></i> Notificaciones
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-12">
+                <button type="button" class="btn btn-success" onclick="abrirModal(null)">Crear nuevo</button>
+            </div>
+        </div>
+
+
+        <hr />
+
+        <table id="tabla" class="display cell-border" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Id notificación</th>
+                    <th>Tipo de notificación</th>
+                    <th>Estado</th>
+                    <th>Nombre</th>
+                    <th>Fechas solicitadas</th>
+                    <th>Total de dias solicitados</th>
+                    <th>Total de horas solicitadas</th>
+                    <th>Aprobación de Recursos Humanos</th>
+                    <th>Acción</th>
+
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+
+    </div>
+</div>
+
+<div class="modal fade" id="formModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white ">
+                <h5 class="modal-title" id="exampleModalLabel">Crear notificación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-2">
+                    <input id="txtId" type="hidden" value="0" />
+                    <div class="row g-2">
+
+                        <div class="col-sm-6">
+                            <label for="txtTipoNotificacion" class="form-label">Tipo de notificación</label>
+                            <input type="text" class="form-control" id="txtTipoNotificacion" aria-describedby="emailHelp" autocomplete="off">
+
+                        </div>
+
+                        <div class="col-sm-6">
+                            <label for="sbestado" class="form-label">Estado</label>
+                            <select class="form-select" id="sbestado">
+
+                                <option value="true">Aprobado</option>
+                                <option value="false">Pendiente</option>
+
+                            </select>
+
+                        </div>
+
+
+                        <div class="col-sm-6">
+                            <label for="txtIdPersona" class="form-label">Persona</label>
+                            <select class="form-select" id="txtIdPersona" required></select>
+                        </div>
+                        <div class="col-sm-6">
+                            @*esta es texto porque se necesita varias fechas*@
+                            <label for="txtfechasSoli" class="form-label">Fechas solicitadas</label>
+                            <input type="text" class="form-control" id="txtfechasSoli" aria-describedby="emailHelp" autocomplete="off">
+
+                        </div>
+
+                        <div class="col-sm-6">
+                            <label for="txtTotalDiasSoli" class="form-label">Total de días solicitados</label>
+                            <input type="text" class="form-control" id="txtTotalDiasSoli" aria-describedby="emailHelp" autocomplete="off">
+
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="txtTotalHoraSoli" class="form-label">Total de horas solicitadas</label>
+                            <input type="text" class="form-control" id="txtTotalHoraSoli" aria-describedby="emailHelp" autocomplete="off">
+
+                        </div>
+
+                        <div class="col-sm-6">
+                            <label for="sbRRHH" class="form-label">Aprobación de RRHH</label>
+                            <select class="form-select" id="sbRRHH">
+
+                                <option value="true">Aprobado</option>
+                                <option value="false">Pendiente</option>
+
+                            </select>
+
+                        </div>
+
+                        <div class="row mt-2">
+                            <div class="col-12">
+                                <div id="mensajeError" class="alert alert-danger" role="alert">
+                                    This is a danger alert—check it out!
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-primary" onclick="guardar()">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+
+@section scripts{
+    <script>
+         var tablaData;
+         var filaSelecionada;
+
+ //Para llenar la tabla, identificador para el tributi id = #
+
+        tablaData = $("#tabla").DataTable({
+            responsive: true,
+            ordering: false,
+            "ajax": {
+
+                url: '@Url.Action("listar_Notificaciones","Notificaciones")',
+                type: "GET",
+                dataType: "json",
+
+            },
+
+            "columns": [
+
+
+                 { "data": "id_Noti" },
+                 { "data": "tipo_Notificacion" },
+                 {"data": "estado", "render": function (valor) {
+                    if (valor != true) {
+
+                        return '<span class="badge bg-danger">Pendiente</span>'
+
+                    } else {
+                        return '<span class="badge bg-success">Aprobado</span>'
+                    }
+
+                   }
+
+                 },
+                {
+                    "data": null,
+                    "render": function (data, type, row) {
+                        return row.nombre + ' ' + row.apellido;
+                    }
+                },
+
+                 { "data": "fechasSolicitadas" },
+                 { "data": "dias_Solicitado" },
+                { "data": "horas_solicitadas" },
+                {
+                    "data": "aprobacionRRHH", "render": function (valor) {
+                        if (valor != true) {
+
+                            return '<span class="badge bg-danger">Pendiente</span>'
+
+                        } else {
+                            return '<span class="badge bg-success">Aprobado</span>'
+                        }
+
+                    }
+
+                },
+
+                 {
+                         "defaultContent": '<button class="btn btn-primary btn-sm  btn-editar">  <i class=" fas fa-pen me-1" > </i></button>' + '<button class="btn btn-danger btn-sm   btn-eliminar">  <i class=" fas fa-trash me-1" > </i></button>',
+                         "orderable": false,
+                         "searchable": false,
+                         "width": "90px"
+
+                     }
+
+
+
+
+
+                 ],
+                 "language": {
+
+                     "url": "https://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json"
+                 }
+
+
+
+
+
+
+
+              });
+  //abrir el model emergente
+        function abrirModal(json) {
+            $("#txtId").val("0");
+            $("#txtTipoNotificacion").val("");
+            $("#sbestado").val("");
+            $("#txtidPersona").val("");
+            $("#txtfechasSoli").val("");
+            $("#txtTotalDiasSoli").val("");
+            $("#txtTotalHoraSoli").val("");
+            $("#sbRRHH").val("");
+            $("#mensajeError").hide();
+
+            $("#formModal").modal("show");
+            if (json != null) {
+                $("#txtId").val(json.id_Noti);
+                $("#txtTipoNotificacion").val(json.tipo_Notificacion);
+                $("#sbestado").val(json.estado ? "true" : "false");
+                $("#txtIdPersona").val(json.id_Persona);
+                $("#txtfechasSoli").val(json.fechasSolicitadas);
+                $("#txtTotalDiasSoli").val(json.dias_Solicitado);
+                $("#txtTotalHoraSoli").val(json.horas_solicitadas);
+                $("#sbRRHH").val(json.aprobacionRRHH ? "true" : "false");
+            }
+        }
+
+
+        $("#tabla tbody").on("click", '.btn-editar', function () {
+            var filaSeleccionada = $(this).closest("tr");
+
+
+            if (filaSeleccionada.hasClass("child")) {
+
+                filaSeleccionada = filaSeleccionada.prev();
+            }
+
+            var data = tablaData.row(filaSeleccionada).data();
+
+            abrirModal(data);
+        });
+
+
+
+        function guardar() {
+
+                var notificaciones = {
+                    id_Noti: $("#txtId").val(),
+                    tipo_Notificacion: $("#txtTipoNotificacion").val(),
+                    estado: $("#sbestado").val(),
+                    id_Persona: $("#txtIdPersona").val(),
+                    fechasSolicitadas: $("#txtfechasSoli").val(),
+                    dias_Solicitado: $("#txtTotalDiasSoli").val(),
+                    horas_solicitadas: $("#txtTotalHoraSoli").val(),
+                    aprobacionRRHH: $("#sbRRHH").val(),
+                    nombre: "",
+                    apellido: ""
+                };
+                console.log("Objeto notificaciones a enviar:", notificaciones);
+
+                        $.ajax({
+                url: '@Url.Action("guardarNotificaciones", "Notificaciones")',
+                type: "POST",
+                // Solo pasar las propiedades que se necesiten, y crear un objeto limpio.
+                data: JSON.stringify({ obj: notificaciones }),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    $(".modal-body").LoadingOverlay("hide");
+
+                    if (notificaciones.id_Noti == 0) {
+                        if (data.resultado != 0) {
+                            notificaciones.id_Noti = data.resultado;
+                            tablaData.row.add(notificaciones).draw(false);
+                            $("#formModal").modal("hide");
+                            location.reload();
+                        } else {
+                            $("#mensajeError").text(data.mensaje);
+                            $("#mensajeError").show();
+                        }
+                    } else {
+                        if (data.resultado) {
+                            tablaData.row(filaSelecionada).data(notificaciones).draw(false);
+                            $("#formModal").modal("hide");
+                            location.reload();
+                        } else {
+                            $("#mensajeError").text(data.mensaje);
+                            $("#mensajeError").show();
+                        }
+                    }
+                   
+                },
+                error: function (error) {
+                    $(".modal-body").LoadingOverlay("hide");
+                    $("#mensajeError").text("Error al guardar los datos.");
+                    $("#mensajeError").show();
+                    console.error("Error al enviar los datos:", error);
+                },
+                beforeSend: function () {
+                    $(".modal-body").LoadingOverlay("show", {
+                        imageResizeFactor: 2,
+                        text: "Cargando.....",
+                        size: 14
+                    });
+                }
+                        });
+            
+        }
+
+
+
+
+        $("#tabla tbody").on("click", '.btn-eliminar', function () {
+            var notificacionesSelecionado = $(this).closest("tr");
+
+            if (notificacionesSelecionado.hasClass("child")) {
+                notificacionesSelecionado = notificacionesSelecionado.prev();
+            }
+        var data = tablaData.row(notificacionesSelecionado).data();
+
+   
+
+    swal({
+        title: "¿Desea eliminar el registro?",
+        text: "¿Estas seguro?",
+        type: "warning",
+        showCancelButton: true,
+        confirmButtonClass: "btn-primary",
+        cancelButtonText: "No",
+        confirmButtonText: "Si",
+        closeOnConfirm: true
+    }, function () {
+        jQuery.ajax({
+            url: '@Url.Action("eliminarNotificaciones", "Notificaciones")',
+            type: "POST",
+            data: JSON.stringify({ id: data.id_Noti }),
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            success: function (response) {
+                if (response.resultado) {
+                    tablaData.row(notificacionesSelecionado).remove().draw(false);
+                    swal("Eliminado!", "El registro ha sido eliminado.", "success");
+                } else {
+                    swal("No se puede eliminar", response.mensaje, "error");
+                }
+            },
+            error: function () {
+                swal("Error", "No se pudo eliminar el registro.", "error");
+            },
+            beforeSend: function () {
+
+            }
+        });
+    });
+});
+
+
+
+                  function cargarPersona() {
+                     $.ajax({
+                         url: '@Url.Action("getPersona", "Notificaciones")',
+                         type: "GET",
+                         dataType: "json",
+                         success: function (data) {
+                             var $select = $("#txtIdPersona");
+                             $select.empty(); // Limpiar opciones existentes
+                             $.each(data.data, function (index, item) {
+                                 console.log(data);
+                                 $select.append($('<option>', {
+
+                                     value: item.id_Persona, // Asignar valor a la opción
+                                     text: item.nombre +' '+item.apellido  // Texto que se muestra
+                                 }));
+
+                             });
+                         },
+                         error: function (error) {
+                             console.error("Error al cargar persona:", error);
+                         }
+                     });
+                  }
+
+                     // Llama a la función al cargar la página o cuando sea necesario
+                     $(document).ready(function () {
+                         cargarPersona();
+                     });
+
+
+
+    </script>
+
+}
+

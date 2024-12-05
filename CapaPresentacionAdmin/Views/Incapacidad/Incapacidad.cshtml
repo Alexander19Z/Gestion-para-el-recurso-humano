@@ -1,0 +1,467 @@
+﻿
+@{
+    ViewBag.Title = "Incapacidad";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<ol class="breadcrumb mb-4 mt-4">
+    <li class="breadcrumb-item"><a href="#">Mantenimiento</a></li>
+    <li class="breadcrumb-item active">Incapacidad</li>
+</ol>
+
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-user"></i> Incapacidad
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-12">
+                <button type="button" class="btn btn-success" onclick="abrirModal(null)">Crear nuevo</button>
+            </div>
+        </div>
+
+
+        <hr />
+
+        <table id="tabla" class="display cell-border" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Id Incapacidad</th>
+                    <th>Tipo de incapacidad</th>
+                    <th>Fecha de inicio</th>
+                    <th>Fecha de finalización</th>
+                    <th>Monto a pagar</th>
+                    <th>Descripción</th>
+                    <th>Nombre completo</th>
+                    <th>Fecha de solicitud</th>
+                    <th>Aprobado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+
+    </div>
+</div>
+
+<div class="modal fade" id="formModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white ">
+                <h5 class="modal-title" id="exampleModalLabel">Crear incapacidad</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-2">
+                    <input id="txtId" type="hidden" value="0" />
+                    <div class="row g-2">
+
+                        <div class="col-sm-6">
+                            <label for="sbatipoIncapacidad" class="form-label">Tipo de incapacidad</label>
+                            <select class="form-select" id="sbatipoIncapacidad">
+
+                                <option value="Enfermedad común">Incapacidad por CCSS</option>
+                                <option value="Maternidad">Licencia de Maternidad</option>
+                                <option value="Enfermedad común">Incapacidad por INS</option>
+
+                            </select>
+
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="txtfechaInicio" class="form-label">Fecha de inicio</label>
+                            <input type="date" class="form-control" id="txtfechaInicio" aria-describedby="emailHelp" autocomplete="off">
+
+                        </div>
+
+                        <div class="col-sm-6">
+                            <label for="txtfechaSolicitud" class="form-label">Fecha de solicitud</label>
+                            <input type="date" class="form-control" id="txtfechaSolicitud" aria-describedby="emailHelp" autocomplete="off">
+
+                        </div>
+
+
+                        <div class="col-sm-6">
+                            <label for="txtfechaFinalizacion" class="form-label">Fecha de finalización</label>
+                            <input type="date" class="form-control" id="txtfechaFinalizacion" aria-describedby="emailHelp" autocomplete="off">
+
+                        </div>
+
+                        <div class="col-sm-6">
+                            <label for="txtmontoApagar" class="form-label">Monto a pagar</label>
+                            <input type="text" class="form-control" id="txtmontoApagar" aria-describedby="emailHelp" autocomplete="off">
+
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="txtdescripcion" class="form-label">Descripción</label>
+                            <input type="text" class="form-control" id="txtdescripcion" aria-describedby="emailHelp" autocomplete="off">
+
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="txtidPersona" class="form-label">Persona</label>
+                            <select class="form-select" id="txtidPersona" required></select>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <label for="sbactivo" class="form-label">Activo</label>
+                            <select class="form-select" id="sbactivo" required>
+
+                                <option value="1">Si</option>
+                                <option value="0">No</option>
+
+                            </select>
+
+                        </div>
+
+                        <div class="row mt-2">
+                            <div class="col-12">
+                                <div id="mensajeError" class="alert alert-danger" role="alert">
+                                    This is a danger alert—check it out!
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-primary" onclick="guardar()">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+
+@section scripts{
+    <script>
+         var tablaData;
+         var filaSelecionada;
+
+ //Para llenar la tabla, identificador para el tributi id = #
+
+        tablaData = $("#tabla").DataTable({
+
+            responsive: true,
+            ordering: false,
+            "ajax": {
+
+                url: '@Url.Action("listar_Incapacidad", "Incapacidad")',
+                type: "GET",
+                dataType: "json",
+
+            },
+
+            "columns": [
+
+
+                 { "data": "id_Incapacidad" },
+                 { "data": "tipo_Incapacidad" },
+                {
+                    "data": "fecha_Inicio",
+                    "render": function (data) {
+                        return formatearFechaHora(data);
+                    }
+                },
+                {
+                    "data": "fecha_Solicitud",
+                    "render": function (data) {
+                        return formatearFechaHora(data);
+                    }
+                },
+
+                { "data": "monto_Apagar" },
+                
+                { "data": "descripcion" },
+                {
+                    "data": null,
+                    "render": function (data, type, row) {
+                        return row.nombre + ' ' + row.apellido;
+                    }
+                },
+                {
+                    "data": "fecha_Finalizacion",
+                    "render": function (data) {
+                        return formatearFechaHora(data);
+                    }
+                },
+                {
+                    "data": "aprobado",
+                    "render": function (valor) {
+                        // Evaluamos si valor es verdaderamente `true` o `1`
+                        
+                        if (valor === true || valor === 1) {
+                            return '<span class="badge bg-success">Sí</span>';
+                        } else {
+                            return '<span class="badge bg-danger">No</span>';
+                        }
+                    }
+                },
+
+                {
+                    "defaultContent": '<button class="btn btn-primary btn-sm  btn-editar">  <i class=" fas fa-pen me-1" > </i></button>' + '<button class="btn btn-danger btn-sm   btn-eliminar">  <i class=" fas fa-trash me-1" > </i></button>',
+                    "orderable": false,
+                    "searchable": false,
+                    "width": "90px"
+
+                }
+
+
+
+                 ],
+                 "language": {
+
+                     "url": "https://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json"
+                 }
+
+
+
+
+
+
+
+        });
+              //abrir el model emergente
+          function abrirModal(json) {
+            $("#txtId").val("0");
+            $("#sbatipoIncapacidad").val("");
+            $("#txtfechaInicio").val("");
+            $("#txtfechaSolicitud").val("");
+            $("#txtfechaFinalizacion").val("");
+            $("#txtmontoApagar").val("");
+            $("#txtdescripcion").val("");
+            $("#txtidPersona").val("");
+            $("#sbactivo").val(1);
+
+            $("#mensajeError").hide();
+
+            $("#formModal").modal("show");
+            if (json != null) {
+                
+                $("#txtId").val(json.id_Incapacidad);
+                $("#sbatipoIncapacidad").val(json.tipo_Incapacidad);
+                $("#txtfechaInicio").val(formatearFechaHora(json.fecha_Inicio));
+                $("#txtfechaSolicitud").val(formatearFechaHora(json.fecha_Solicitud));
+                $("#txtfechaFinalizacion").val(formatearFechaHora(json.fecha_Finalizacion));
+                $("#txtmontoApagar").val(json.monto_Apagar);
+                $("#txtdescripcion").val(json.descripcion);
+                $("#txtidPersona").val(json.id_Persona);
+                $("#sbactivo").val(json.activo == true ? 1 : 0);
+            }
+        }
+
+
+        $("#tabla tbody").on("click", '.btn-editar', function () {
+            var filaSeleccionada = $(this).closest("tr");
+
+
+            if (filaSeleccionada.hasClass("child")) {
+
+                filaSeleccionada = filaSeleccionada.prev();
+            }
+
+            var data = tablaData.row(filaSeleccionada).data();
+
+            abrirModal(data);
+        });
+
+
+
+        function guardar() {
+
+            var incapacidad = {
+                id_Incapacidad: $("#txtId").val(),
+                tipo_Incapacidad: $("#sbatipoIncapacidad").val(),
+                fecha_Inicio: $("#txtfechaInicio").val(),
+                fecha_Solicitud: $("#txtfechaSolicitud").val(),
+                fecha_Finalizacion: $("#txtfechaFinalizacion").val(),
+                monto_Apagar: $("#txtmontoApagar").val(),
+                descripcion: $("#txtdescripcion").val(),
+                id_Persona: $("#txtidPersona").val(),
+                activo: $("#sbactivo").val() == true ? 1 : 0
+            };
+                jQuery.ajax({
+                url: '@Url.Action("guardarIncapacidad", "Incapacidad")',
+                    type: "POST",
+                    data: JSON.stringify({ obj: incapacidad }),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    $(".modal-body").LoadingOverlay("hide");
+                    //usuario nuevo
+
+                    if (incapacidad.id_Incapacidad == 0) {
+                        if (data.resultado != 0) {
+                            incapacidad.id_Incapacidad = data.resultado;
+                            tablaData.row.add(incapacidad).draw(false);
+                            $("#formModal").modal("hide");
+                        } else {
+                            $("#mensajeError").text(data.mensaje);
+                            $("#mensajeError").show();
+                        }
+                    } else {
+                        //usuario editar
+                        if (data.resultado) {
+                            tablaData.row(filaSelecionada).data(incapacidad).draw(false); // Actualizar la fila existente en la tabla
+                            $("#formModal").modal("hide");
+                            location.reload();
+                        } else {
+                            $("#mensajeError").text(data.mensaje);
+                            $("#mensajeError").show();
+                            location.reload();
+                        }
+                    }
+                },
+                error: function (error) {
+                    $(".modal-body").LoadingOverlay("hide");
+                    $("#mensajeError").text("Error");
+                    $("#mensajeError").show();
+                },
+                beforeSend: function () {
+                    //Cuando realize algo durante la ejecución
+                    $(".modal-body").LoadingOverlay("show", {
+                        imageResizeFactor: 2,
+                        text: "Cargando.....",
+                        size: 14
+                    });
+                }
+            });
+            }
+
+
+
+
+         $("#tabla tbody").on("click", '.btn-eliminar', function () {
+
+
+             var incapacidadSelecionado = $(this).closest("tr");
+
+             if (incapacidadSelecionado.hasClass("child")) {
+
+                 incapacidadSelecionado = incapacidadSelecionado.prev();
+             }
+                        var data = tablaData.row(incapacidadSelecionado).data();
+
+                       
+
+                        swal({
+                            title: "¿Desea eliminar el registro?",
+                            text: "¿Estas seguro?",
+                            type: "warning",
+                            showCancelButton: true,
+                            confirmButtonClass: "btn-primary",
+                            confirmButtonText: "Si",
+                            cancelButtonText: "No",
+
+
+                            closeOnConfirm: true
+                        },
+                            function () {
+
+                                jQuery.ajax({
+                                    url: '@Url.Action("eliminarIncapacidad", "Incapacidad")',
+                                    type: "POST",
+                                    data: JSON.stringify({ id: data.id_Incapacidad }),
+                                    dataType: "json",
+                                    contentType: "application/json; charset=utf-8",
+                                    success: function (data) {
+                                        if (data.resultado) {
+                                            tablaData.row(incapacidadSelecionado).remove().draw();
+                                        } else {
+                                            swal("No se puede eliminar",data.mensaje,"error")
+                                        }
+                                    },
+                                    error: function () {
+
+                                    },
+                                    beforeSend: function () {
+
+                                    },
+                                });
+
+                            });
+
+         });
+
+
+
+
+        function formatearFechaHora(fechaString) {
+            // Expresión regular para capturar partes de la fecha y hora en formato 'Mes Día Año Hora:Minuto AM/PM'
+            var regex = /([a-zA-Z]{3})\s+(\d{1,2})\s+(\d{4})\s+(\d{1,2}):(\d{2})(AM|PM)/;
+            var partes = fechaString.match(regex);
+
+            if (partes) {
+                var mes = partes[1];     // Mes en formato abreviado (Oct)
+                var dia = partes[2];      // Día (16)
+                var anio = partes[3];     // Año (2024)
+                var hora = parseInt(partes[4]);  // Hora (12)
+                var minuto = partes[5];   // Minuto (00)
+                var periodo = partes[6];  // AM o PM
+
+                // Diccionario para convertir meses abreviados en números
+                var meses = {
+                    "Jan": 0, "Feb": 1, "Mar": 2, "Apr": 3, "May": 4, "Jun": 5,
+                    "Jul": 6, "Aug": 7, "Sep": 8, "Oct": 9, "Nov": 10, "Dec": 11
+                };
+                var numeroMes = meses[mes];
+
+                // Ajustar la hora para el formato 24 horas
+                if (periodo === "PM" && hora < 12) {
+                    hora += 12;
+                }
+                if (periodo === "AM" && hora === 12) {
+                    hora = 0;
+                }
+
+                // Crear objeto Date
+                var fecha = new Date(anio, numeroMes, dia, hora, minuto);
+
+                // Formatear fecha en 'YYYY-MM-DD' para ser compatible con input type="date"
+                var fechaFormateada = fecha.toISOString().split('T')[0];
+
+                return fechaFormateada;
+            } else {
+                return "Fecha inválida";
+            }
+        }
+
+
+
+          function cargarPersona() {
+                 $.ajax({
+                     url: '@Url.Action("getPersona", "Notificaciones")',
+                     type: "GET",
+                     dataType: "json",
+                     success: function (data) {
+                         var $select = $("#txtidPersona");
+                         $select.empty(); // Limpiar opciones existentes
+                         $.each(data.data, function (index, item) {
+                             console.log(data);
+                             $select.append($('<option>', {
+
+                                 value: item.id_Persona, // Asignar valor a la opción
+                                 text: item.nombre +' '+item.apellido  // Texto que se muestra
+                             }));
+
+                         });
+                     },
+                     error: function (error) {
+                         console.error("Error al cargar persona:", error);
+                     }
+                 });
+          }
+
+     // Llama a la función al cargar la página o cuando sea necesario
+     $(document).ready(function () {
+         cargarPersona();
+     });
+
+    </script>
+
+}

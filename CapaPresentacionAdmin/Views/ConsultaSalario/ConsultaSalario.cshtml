@@ -1,0 +1,176 @@
+﻿
+@{
+    ViewBag.Title = "ConsultaSalario";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+
+<ol class="breadcrumb mb-4 mt-4">
+    <li class="breadcrumb-item"><a href="#">Consulta de salarios</a></li>
+    <li class="breadcrumb-item active">Consulta de salarios</li>
+</ol>
+
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-user"></i> Consulta de salarios
+    </div>
+    <div class="card-body">
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    <label for="NombreEmpleado" class="form-label">Nombre de empleado:</label>
+                    <input type="text" name="NombreEmpleado" id="NombreEmpleado" class="form-control" value="@ViewBag.NombreUsuario" readonly />
+                    <input type="hidden" id="idPersona" value="@ViewBag.IdUsuario">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group mb-3">
+                    <label for="fecha" class="form-label">Elija una fecha:</label>
+                    <input type="month" name="fecha" id="fecha" class="form-control" />
+                </div>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="button" class="btn btn-success w-100" id="btn-Calcular">Buscar</button>
+            </div>
+        </div>
+
+
+        <hr />
+
+        <table id="tabla" class="display cell-border" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Id planilla</th>
+                    <th>Persona</th>
+                    <th>Salario total</th>
+                    <th>Deducciones CCSS</th>
+                    <th>Deducciones permisos</th>
+                    <th>Deducciones impuestos de renta</th>
+                    <th>Deducciones por Incapacidad</th>
+                    <th>Deducciones varias</th>
+                    <th>Salario a pagar </th>
+                    <th>Fecha creación</th>
+                    <th>Fecha de pago</th>
+
+
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+
+    </div>
+</div>
+
+
+@section scripts {
+    <script>
+        var tablaData;
+
+        // Configuración inicial de DataTable
+        tablaData = $("#tabla").DataTable({
+            responsive: true,
+            ordering: false,
+            columns: [
+                { "data": "id_Planilla" },
+                {
+                    "data": null,
+                    "render": function (data, type, row) {
+                        return row.nombre + ' ' + row.apellido;
+                    }
+                },
+                {
+                    "data": "salario_Total",
+                    "render": function (data){
+                        return formatearColones(data);
+                    }   
+                },
+                {
+                    "data": "deduccion_CCSS",
+                    "render": function (data) {
+                        return formatearColones(data);
+                    }
+                },
+                {
+                    "data": "deduccion_permiso",
+                    "render": function (data) {
+                        return formatearColones(data);
+                    }
+                },
+                {
+                    "data": "deduccion_InpuestoRenta",
+                    "render": function (data) {
+                        return formatearColones(data);
+                    }
+                },
+                {
+                    "data": "deduccion_Incapacidad",
+                    "render": function (data) {
+                        return formatearColones(data);
+                    }
+                },
+                {
+                    "data": "deducciones_Varias",
+                    "render": function (data) {
+                        return formatearColones(data);
+                    }
+                },
+                
+                {
+                    "data": "salario_Pagar",
+                    "render": function (data) {
+                        return formatearColones(data);
+                    }
+                },
+                {
+                    "data": "fecha_creacion",
+                },
+                { "data": "fecha_Pago" }
+            ],
+            language: {
+                url: "https://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json"
+            }
+        });
+
+        // Función para hacer la consulta y actualizar la tabla
+        function consultaPlanilla() {
+            var idPersona = $('#idPersona').val();
+            var fechaPago = $('#fecha').val();
+
+            $.ajax({
+                url: '@Url.Action("ConsultaPlanilla", "ConsultaSalario")',
+                type: 'POST',
+                data: {
+                    oPersona: idPersona,
+                    fecha: fechaPago
+                },
+                success: function (response) {
+                    if (response.data) {
+                        // Limpiar y agregar datos a la tabla
+                        tablaData.clear().rows.add([response.data]).draw();
+                        swal("Salario encontrado!!", "Puedes verificar en la siguiente tabla", "success");
+                    } else {
+                        swal("Error",response.message, "error");
+                    }
+                },
+                error: function (error) {
+                    swal("Error", "Ocurrió un problema al hacer la consulta", "error");
+                }
+            });
+        }
+
+        $(document).ready(function () {
+            $("#btn-Calcular").on("click", function () {
+                consultaPlanilla();
+            });
+        });
+
+
+        function formatearColones(valor) {
+            return new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'CRC' }).format(valor);
+        }
+    </script>
+}
+
+

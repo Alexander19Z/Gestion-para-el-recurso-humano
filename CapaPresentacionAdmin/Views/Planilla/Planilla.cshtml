@@ -1,0 +1,471 @@
+﻿
+@{
+    ViewBag.Title = "Planilla";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<ol class="breadcrumb mb-4 mt-4">
+    <li class="breadcrumb-item"><a href="#">Mantenimiento</a></li>
+    <li class="breadcrumb-item active">Planilla</li>
+</ol>
+
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-user"></i> Planilla
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-12">
+                <button type="button" class="btn btn-success" onclick="abrirModal(null)">Crear nuevo</button>
+            </div>
+        </div>
+
+
+        <hr />
+
+        <table id="tabla" class="display cell-border" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Id planilla</th>
+                    <th>Persona</th>
+                    <th>Salario total</th>
+                    <th>Deducciones CCSS</th>
+                    <th>Deducciones permisos</th>
+                    <th>Deducciones impuestos de renta</th>
+                    <th>Deducciones por Incapacidad</th>
+                   
+                    <th>Deducciones varias</th>
+                    <th>Salario a pagar </th>
+                    <th>Fecha creación</th>
+                    <th>Fecha de pago</th>
+                    <th>Acción</th>
+
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+
+    </div>
+</div>
+
+<div class="modal fade" id="formModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white ">
+                <h5 class="modal-title" id="exampleModalLabel">Crear planilla</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-2">
+                    <input id="txtId" type="hidden" value="0" />
+                    <div class="row g-2">
+
+                        <div class="col-sm-6">
+                            <label for="txtidPersona" class="form-label">Persona</label>
+                            <select class="form-select" id="txtidPersona" required></select>
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="txtSalarioTotal" class="form-label">Salario bruto</label>
+                            <input type="text" class="form-control" id="txtSalarioTotal" aria-describedby="emailHelp" autocomplete="off">
+
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="txtDCCSS" class="form-label">Deducciones CCSS</label>
+                            <input type="text" class="form-control" id="txtDCCSS" aria-describedby="emailHelp" autocomplete="off">
+
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="txtDPermiso" class="form-label">Deducciones Permiso</label>
+                            <input type="text" class="form-control" id="txtDPermiso" aria-describedby="emailHelp" autocomplete="off">
+
+                        </div>
+
+                        <div class="col-sm-6">
+                            <label for="txtDimpRenta" class="form-label">Deducciones impuesto de renta</label>
+                            <input type="text" class="form-control" id="txtDimpRenta" aria-describedby="emailHelp" autocomplete="off">
+
+                        </div>
+
+                        <div class="col-sm-6">
+                            <label for="txtDIncapacidad" class="form-label">Deducciones incapacidad</label>
+                            <input type="text" class="form-control" id="txtDIncapacidad" aria-describedby="emailHelp" autocomplete="off">
+
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="txtDVarias" class="form-label">Deducciones varias</label>
+                            <input type="text" class="form-control" id="txtDVarias" aria-describedby="emailHelp" autocomplete="off">
+
+                        </div>
+
+                       
+
+                        <div class="col-sm-6">
+                            <label for="txtSalarioPagar" class="form-label">Salario por pagar</label>
+                            <input type="text" class="form-control" id="txtSalarioPagar" aria-describedby="emailHelp" autocomplete="off">
+
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="txtfechaCreacion" class="form-label">Fecha de creación</label>
+                            <input type="date" class="form-control" id="txtfechaCreacion" aria-describedby="emailHelp" autocomplete="off">
+
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="txtFechaPago" class="form-label">Fecha de pago</label>
+                            <input type="month" class="form-control" id="txtFechaPago" aria-describedby="emailHelp" autocomplete="off">
+
+                        </div>
+
+                        <div class="row mt-2">
+                            <div class="col-12">
+                                <div id="mensajeError" class="alert alert-danger" role="alert">
+                                    This is a danger alert—check it out!
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-primary" onclick="guardar()">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+
+@section scripts{
+    <script>
+         var tablaData;
+         var filaSelecionada;
+
+ //Para llenar la tabla, identificador para el tributi id = #
+
+        tablaData = $("#tabla").DataTable({
+            responsive: true,
+            ordering: false,
+            "ajax": {
+
+                 url: '@Url.Action("listar_Planilla", "Planilla")',
+                type: "GET",
+                dataType: "json",
+
+            },
+
+            "columns": [
+
+
+                { "data": "id_Planilla" },
+                {
+                    "data": null,
+                    "render": function (data, type, row) {
+                        console.log(row);
+                        return row.nombre + ' ' + row.apellido;
+                    }
+
+
+                },
+                {
+                    "data": "salario_Total",
+                    "render": function (data) {
+                        return formatearColones(data)
+                    }
+
+
+                },
+                {
+                    "data": "deduccion_CCSS",
+                    "render": function (data) {
+                        return formatearColones(data)
+                    }
+                },
+                {
+                    "data": "deduccion_permiso",
+                    "render": function (data) {
+                        return formatearColones(data)
+                    }
+                },
+                {
+                    "data": "deduccion_InpuestoRenta",
+                    "render": function (data) {
+                        return formatearColones(data)
+                    }
+                },
+                {
+                    "data": "deduccion_Incapacidad",
+                    "render": function (data) {
+                        return formatearColones(data)
+                    }
+                },
+                
+                {
+                    "data": "deducciones_Varias",
+                    "render": function (data) {
+                        return formatearColones(data)
+                    }
+                },
+
+                {
+                    "data": "salario_Pagar",
+                    "render": function (data) {
+                        return formatearColones(data)
+                    }
+                },
+
+                {
+                    "data": "fecha_creacion"
+                },
+                {
+                    "data": "fecha_Pago"
+                },
+
+                 {
+                         "defaultContent": '<button class="btn btn-primary btn-sm  btn-editar">  <i class=" fas fa-pen me-1" > </i></button>' + '<button class="btn btn-danger btn-sm   btn-eliminar">  <i class=" fas fa-trash me-1" > </i></button>',
+                         "orderable": false,
+                         "searchable": false,
+                         "width": "90px"
+
+                 }
+
+            ],
+            "language": {
+
+              "url": "https://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json"
+            }
+        });
+
+
+
+
+
+
+  //abrir el model emergente
+        function abrirModal(json) {
+            $("#txtId").val("0");
+            $("#txtidPersona").val("");
+            $("#txtSalarioTotal").val("");
+            $("#txtDCCSS").val("");
+            $("#txtDPermiso").val("");
+            $("#txtDimpRenta").val("");
+            $("#txtDIncapacidad").val("");
+            
+            $("#txtSalarioPagar").val("");
+            $("#txtfechaCreacion").val("");
+            $("#txtFechaPago").val("");
+           
+            $("#txtSalarioPagar").val("");
+            $("#mensajeError").hide();
+
+            $("#formModal").modal("show");
+            if (json != null) {
+              
+                $("#txtId").val(json.id_Planilla);
+                $("#txtidPersona").val(json.id_Persona);
+                $("#txtSalarioTotal").val(json.salario_Total);
+                $("#txtDCCSS").val(json.deduccion_CCSS);
+                $("#txtDPermiso").val(json.deduccion_permiso);
+                $("#txtDimpRenta").val(json.deduccion_InpuestoRenta);
+                $("#txtDIncapacidad").val(json.deduccion_Incapacidad);
+                
+                $("#txtSalarioPagar").val(json.salario_Pagar);
+                $("#txtfechaCreacion").val(json.fecha_creacion);
+                $("#txtFechaPago").val(json.fecha_Pago);
+                
+                $("#txtDVarias").val(json.deducciones_Varias);
+
+            }
+        }
+
+
+        $("#tabla tbody").on("click", '.btn-editar', function () {
+            var filaSeleccionada = $(this).closest("tr");
+
+
+            if (filaSeleccionada.hasClass("child")) {
+
+                filaSeleccionada = filaSeleccionada.prev();
+            }
+
+            var data = tablaData.row(filaSeleccionada).data();
+
+            abrirModal(data);
+        });
+
+
+
+            function guardar() {
+
+                var planilla = {
+                    id_Planilla: $("#txtId").val(),
+                    id_Persona: $("#txtidPersona").val(),
+                    salario_Total: $("#txtSalarioTotal").val(),
+                    deduccion_CCSS: $("#txtDCCSS").val(),
+                    deduccion_permiso: $("#txtDPermiso").val(),
+                    deduccion_InpuestoRenta: $("#txtDimpRenta").val(),
+                    deduccion_Incapacidad: $("#txtDIncapacidad").val(),
+                    
+                    salario_Pagar: $("#txtSalarioPagar").val(),
+                    fecha_creacion: $("#txtfechaCreacion").val(),
+                    fecha_Pago: $("#txtFechaPago").val(),
+                   
+                    deducciones_Varias: $("#txtDVarias").val(),
+                };
+                jQuery.ajax({
+                url: '@Url.Action("guardarPlanilla", "Planilla")',
+                type: "POST",
+                data: JSON.stringify({ obj: planilla }),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    $(".modal-body").LoadingOverlay("hide");
+                    //usuario nuevo
+
+                    if (planilla.id_Planilla == 0) {
+                        if (data.resultado != 0) {
+                            planilla.id_Planilla = data.resultado;
+                            tablaData.row.add(planilla).draw(false);
+                            $("#formModal").modal("hide");
+                            location.reload();
+                        } else {
+                            $("#mensajeError").text(data.mensaje);
+                            $("#mensajeError").show();
+                        }
+                    } else {
+                        //usuario editar
+                        if (data.resultado) {
+                            tablaData.row(filaSelecionada).data(planilla).draw(false); // Actualizar la fila existente en la tabla
+                            $("#formModal").modal("hide");
+                            location.reload();
+                        } else {
+                            $("#mensajeError").text(data.mensaje);
+                            $("#mensajeError").show();
+                        }
+                    }
+                },
+                error: function (error) {
+                    $(".modal-body").LoadingOverlay("hide");
+                    $("#mensajeError").text("Error");
+                    $("#mensajeError").show();
+                },
+                beforeSend: function () {
+                    //Cuando realize algo durante la ejecución
+                    $(".modal-body").LoadingOverlay("show", {
+                        imageResizeFactor: 2,
+                        text: "Cargando.....",
+                        size: 14
+                    });
+                }
+            });
+            }
+
+
+
+
+         $("#tabla tbody").on("click", '.btn-eliminar', function () {
+
+
+                    var planillaSelecionado = $(this).closest("tr");
+
+                     if (planillaSelecionado.hasClass("child")) {
+                         planillaSelecionado = planillaSelecionado.prev();
+                     }
+
+
+                    var data = tablaData.row(planillaSelecionado).data();
+
+                        
+
+                        swal({
+                            title: "¿Desea eliminar el registro?",
+                            text: "¿Estas seguro?",
+                            type: "warning",
+                            showCancelButton: true,
+                            confirmButtonClass: "btn-primary",
+                            confirmButtonText: "Si",
+                            cancelButtonText: "No",
+
+
+                            closeOnConfirm: true
+                        },
+                            function () {
+
+                                jQuery.ajax({
+                                    url: '@Url.Action("eliminarPlanilla", "Planilla")',
+                                    type: "POST",
+                                    data: JSON.stringify({ id: data.id_Planilla }),
+                                    dataType: "json",
+                                    contentType: "application/json; charset=utf-8",
+                                    success: function (data) {
+                                        if (data.resultado) {
+                                            tablaData.row(planillaSelecionado).remove().draw();
+                                        } else {
+                                            swal("No se puede eliminar",data.mensaje,"error")
+                                        }
+                                    },
+                                    error: function () {
+
+                                    },
+                                    beforeSend: function () {
+
+                                    },
+                                });
+
+                            });
+
+         });
+
+           function cargarPersona() {
+                $.ajax({
+                    url: '@Url.Action("getPersona", "Planilla")',
+                    type: "GET",
+                    dataType: "json",
+                    success: function (data) {
+                        var $select = $("#txtidPersona");
+                        $select.empty(); // Limpiar opciones existentes
+                        $.each(data.data, function (index, item) {
+                            console.log(data);
+                            $select.append($('<option>', {
+
+                                value: item.id_Persona, // Asignar valor a la opción
+                                text: item.nombre +' '+item.apellido  // Texto que se muestra
+                            }));
+
+                        });
+                    },
+                    error: function (error) {
+                        console.error("Error al cargar persona:", error);
+                    }
+                });
+           }
+
+        function formatFecha(fecha) {
+            if (!fecha) return "";
+            const date = new Date(fecha);
+            return date.toLocaleDateString("es-ES", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric"
+            });
+        }
+
+        function formatearColones(valor) {
+            return new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'CRC' }).format(valor);
+        }
+
+        $(document).ready(function () {
+            
+            cargarPersona();
+        });
+
+    </script>
+
+}
+

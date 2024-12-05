@@ -1,0 +1,229 @@
+﻿
+@{
+    ViewBag.Title = "ConsultaVacaciones";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+
+
+<ol class="breadcrumb mb-4 mt-4">
+    <li class="breadcrumb-item"><a href="#">Registros</a></li>
+    <li class="breadcrumb-item active">Registros</li>
+</ol>
+
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-user"></i> Consultas varias
+    </div>
+    <div class="card-body">
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    <label for="NombreEmpleado" class="form-label">Nombre de empleado:</label>
+                    <input type="text" name="NombreEmpleado" id="NombreEmpleado" class="form-control" value="@ViewBag.NombreUsuario" readonly />
+                    <input type="hidden" id="idPersona" value="@ViewBag.IdUsuario">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group mb-3">
+                    <label for="fecha" class="form-label">Elija una fecha:</label>
+                    <input type="month" name="fecha" id="fecha" class="form-control" />
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group mb-3">
+                    <label for="tipoConsulta" class="form-label">Consulta:</label>
+                    <select class="form-control" id="tipoConsulta">
+                        <option value="Solicitud de vacaciones">Vacaciones</option>
+                        <option value="Solicitud de permiso">Permisos</option>
+                        <option value="Solicitud de incapacidad">Incapacidades</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="button" class="btn btn-success w-100" id="btn-Calcular">Buscar</button>
+            </div>
+        </div>
+
+
+        <hr />
+
+        <table id="tabla" class="display cell-border" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Id notificación</th>
+                    <th>Tipo de notificación</th>
+                    <th>Estado</th>
+                    <th>Nombre</th>
+                    <th>Fechas solicitadas</th>
+                    <th>Total de dias solicitados</th>
+                    <th>Total de horas solicitadas</th>
+                    <th>Aprobación de Recursos Humanos</th>
+                   
+
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+
+    </div>
+</div>
+
+
+
+
+
+@section scripts{
+    <script>
+         var tablaData;
+         var filaSelecionada;
+
+ //Para llenar la tabla, identificador para el tributi id = #
+
+        tablaData = $("#tabla").DataTable({
+            responsive: true,
+            ordering: false,
+            "columns": [
+
+
+                 { "data": "id_Noti" },
+                 { "data": "tipo_Notificacion" },
+                 {"data": "estado", "render": function (valor) {
+                    if (valor != true) {
+
+                        return '<span class="badge bg-danger">Pendiente</span>'
+
+                    } else {
+                        return '<span class="badge bg-success">Aprobado</span>'
+                    }
+
+                   }
+
+                 },
+                {
+                    "data": null,
+                    "render": function (data, type, row) {
+                        return row.nombre + ' ' + row.apellido;
+                    }
+                },
+
+                 { "data": "fechasSolicitadas" },
+                 { "data": "dias_Solicitado" },
+                { "data": "horas_solicitadas" },
+                {
+                    "data": "aprobacionRRHH", "render": function (valor) {
+                        if (valor != true) {
+
+                            return '<span class="badge bg-danger">Pendiente</span>'
+
+                        } else {
+                            return '<span class="badge bg-success">Aprobado</span>'
+                        }
+
+                    }
+
+                }
+
+                
+
+
+
+
+
+                 ],
+                 "language": {
+
+                     "url": "https://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json"
+                 }
+
+
+
+
+
+
+
+        });
+
+          function consultas() {
+            var idPersona = $('#idPersona').val();
+            var fechaPago = $('#fecha').val();
+            var tipoConsulta = $('#tipoConsulta').val();
+
+            $.ajax({
+                url: '@Url.Action("ConsultaVacaciones", "ConsultaVacaciones")',
+                type: 'POST',
+                data: {
+                    oPersona: idPersona,
+                    fecha: fechaPago,
+                    tipoConsulta: tipoConsulta
+                },
+                success: function (response) {
+                    console.log(response); // Verifica la estructura de la respuesta
+                    if (response.data && response.data.length > 0) {
+                        // Limpiar y agregar datos a la tabla
+                        tablaData.clear().rows.add(response.data).draw();
+                        swal("Consulta encontrada!", "Puedes verificar en la siguiente tabla", "success");
+                    } else {
+                        swal("Error", response.message, "error");
+                    }
+                },
+                error: function (error) {
+                    swal("Error", "Ocurrió un problema al hacer la consulta", "error");
+                }
+         });
+}
+
+          $(document).ready(function () {
+              $("#btn-Calcular").on("click", function () {
+                  consultas();
+              });
+          });
+
+
+
+
+
+
+
+
+
+
+
+
+                  function cargarPersona() {
+                     $.ajax({
+                         url: '@Url.Action("getPersona", "Notificaciones")',
+                         type: "GET",
+                         dataType: "json",
+                         success: function (data) {
+                             var $select = $("#txtIdPersona");
+                             $select.empty(); // Limpiar opciones existentes
+                             $.each(data.data, function (index, item) {
+                                 console.log(data);
+                                 $select.append($('<option>', {
+
+                                     value: item.id_Persona, // Asignar valor a la opción
+                                     text: item.nombre +' '+item.apellido  // Texto que se muestra
+                                 }));
+
+                             });
+                         },
+                         error: function (error) {
+                             console.error("Error al cargar persona:", error);
+                         }
+                     });
+                  }
+
+                     // Llama a la función al cargar la página o cuando sea necesario
+                     $(document).ready(function () {
+                         cargarPersona();
+                     });
+
+
+
+    </script>
+
+}
+

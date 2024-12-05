@@ -1,0 +1,216 @@
+﻿
+@{
+    ViewBag.Title = "RegistroVaca";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+
+<ol class="breadcrumb mb-4 mt-4">
+    <li class="breadcrumb-item"><a href="#">Reportes</a></li>
+    <li class="breadcrumb-item active">Reporte registro de vacaciones</li>
+</ol>
+
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-user"></i> Registro de vacaciones
+    </div>
+    <div class="card-body">
+        <div class="row align-items-center mb-4">
+
+            <div class="col-sm-3">
+                <label for="txtidPersona" class="form-label">Persona</label>
+                <select class="form-select" id="txtidPersona" required>
+                    <option value="Todos">Todos</option>
+                </select>
+            </div>
+
+            <div class="col-auto mt-4">
+                <button type="button" class="btn btn-success" id="btnBuscar">Buscar</button>
+            </div>
+
+            <div class="col-auto mt-4">
+                <button type="button" class="btn btn-success" id="btn-ArchivoPDF">Descargar reporte</button>
+            </div>
+
+        </div>
+
+
+        <hr />
+
+        <table id="tabla" class="display cell-border" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Id registro</th>
+                    <th>Tipo registro</th>
+                    <th>Persona</th>
+                    <th>Fecha registro</th>
+                    <th>Tipo movimiento</th>
+                    <th>Periodo</th>
+                   
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+
+    </div>
+</div>
+
+
+
+
+
+@section scripts{
+    <script>
+         var tablaData;
+
+        $(document).ready(function () {
+
+            tablaData = $("#tabla").DataTable({
+
+                responsive: true,
+                ordering: false,
+
+                "columns": [
+                    { "data": "id_Registro" },
+                    { "data": "tipo_Registro" },
+                    {
+                        "data": null,
+                        "render": function (data, type, row) {
+                            return row.nombre + ' ' + row.apellido;
+                        }
+                    },
+                    { "data": "fecha_Registro" },
+                    { "data": "tipo_Movimiento" },
+                    { "data": "periodo" },
+
+                ],
+                "language": {
+                    "url": "https://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json"
+                }
+            });
+
+
+            $('#btnBuscar').on('click', function () {
+                var persona = $('#txtidPersona').val();
+                if (persona) {
+
+
+                        $.ajax({
+                            url: '@Url.Action("listar_ReportesRegistroVaca", "ReporteRegistroVaca")',
+                            type: "GET",
+                            data: { id_persona: persona },
+                            success: function (response) {
+
+                                tablaData.clear();
+
+
+                                tablaData.rows.add(response.data);
+
+
+                                tablaData.draw();
+
+                                swal("Realizado", "", "success");
+                            },
+                            error: function () {
+                                swal("Error al cargar los datos", "", "error");
+                            }
+                        });
+
+
+
+
+
+
+
+
+
+
+                }
+
+
+
+
+
+
+
+            });
+
+
+            $('#btn-ArchivoPDF').on('click', function () {
+                var persona = $('#txtidPersona').val();
+             if (persona) {
+                 window.location.href = '@Url.Action("DescargarReporteRegistroVacas", "ReporteRegistroVaca")?id_persona=' + persona;
+             } else {
+              swal("Seleccione una opción", "", "error");
+      }
+  });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        });
+
+
+         function cargarPersona() {
+              $.ajax({
+                  url: '@Url.Action("getPersona", "Aguinaldo")',
+                  type: "GET",
+                  dataType: "json",
+                  success: function (data) {
+                      var $select = $("#txtidPersona");
+
+                      $select.empty().append($('<option>', {
+                          value: "Todos",
+                          text: "Todos"
+                      }));
+                      $.each(data.data, function (index, item) {
+                          console.log(data);
+                          $select.append($('<option>', {
+
+                              value: item.id_Persona,
+                              text: item.nombre +' '+item.apellido
+                          }));
+
+                      });
+                  },
+                  error: function (error) {
+                      console.error("Error al cargar persona:", error);
+                  }
+              });
+
+
+         }
+
+        $(document).ready(function () {
+
+            cargarPersona();
+        });
+
+
+        function año(fecha) {
+
+            var fechaCon = new Date(fecha);
+            var año = fechaCon.getFullYear();
+
+            return año;
+        }
+
+    </script>
+
+}
+

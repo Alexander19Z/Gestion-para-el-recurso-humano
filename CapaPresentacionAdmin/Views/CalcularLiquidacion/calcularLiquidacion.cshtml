@@ -1,0 +1,177 @@
+﻿
+@{
+    ViewBag.Title = "Calcular liquidación";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<div class="container mt-5 p-4 shadow rounded bg-light">
+    <h2 class="text-center mb-4">Cálculo de Liquidación de Empleado</h2>
+    <form id="permisoForm" enctype="multipart/form-data">
+
+        <!-- Sección para buscar empleado -->
+        <div class="mb-3">
+            <h5 class="mb-3">Buscar empleado</h5>
+
+            <label for="idPersona" class="form-label">Ingrese número de cédula:</label>
+            <input type="text" class="form-control" name="idPersona" id="idPersona" required
+                   placeholder="Ejemplo: 116320487" pattern="\d*"
+                   title="Solo se permiten números" oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
+        </div>
+
+        <!-- Tipo de despido -->
+        <div class="mb-3">
+            <label class="form-label">Tipo de despido:</label>
+            <select id="tipoLiquidacion" name="tipoLiquidacion" class="form-select">
+                <option value="Despido con responsabilidad">Despido con responsabilidad</option>
+                <option value="Despido sin responsabilidad">Despido sin responsabilidad</option>
+                <option value="Renuncia">Renuncia</option>
+            </select>
+        </div>
+
+        <!-- Fecha de salida -->
+        <div class="mb-3">
+            <label class="form-label" for="fechaSalida">Fecha de salida:</label>
+            <input type="text" class="form-control" name="fechaSalida" id="fechaSalida" required/>
+        </div>
+
+        <!-- Preaviso -->
+        <div class="mb-3">
+            <label class="form-label" for="tipoPreaviso">¿Se dio preaviso?:</label>
+            <select id="tipoPreaviso" name="tipoPreaviso" class="form-select">
+                <option value="No">No</option>
+                <option value="Si">Sí</option>
+            </select>
+        </div>
+
+        <!-- Botón para buscar -->
+        <div class="text-center">
+            <button class="btn btn-success w-50" type="button" id="btnCalcular">Calcular Liquidación</button>
+        </div>
+
+        <hr class="my-4" />
+
+        <!-- Resultados del cálculo -->
+        <h5 class="mb-3">Resultados del Cálculo</h5>
+
+        <div class="row">
+            <label class="form-label">Vacaciones no disfrutadas:</label>
+            <input type="text" class="form-control" id="vacaciones" name="vacaciones" value="₡0" readonly />
+
+            <label class="form-label">Preaviso:</label>
+            <input type="text" class="form-control" id="preaviso" name="preaviso" value="₡0" readonly />
+
+            <label class="form-label">Aguinaldo:</label>
+            <input type="text" class="form-control" id="aguinaldo" name="aguinaldo" value="₡0" readonly />
+
+            <label class="form-label">Cesantía:</label>
+            <input type="text" class="form-control" id="cesantia" name="cesantia" value="₡0" readonly />
+            <label class="form-label">Salario pendiente:</label>
+            <input type="text" class="form-control" id="salario" name="salario" value="₡0" readonly />
+            <label class="form-label">Monto a pagar:</label>
+            <input type="text" class="form-control" id="monto" name="monto" value="₡0" readonly />
+
+
+
+
+
+
+        </div>
+    </form>
+</div>
+
+
+@section scripts{
+
+
+
+
+    <script>
+    document.getElementById("btnCalcular").addEventListener("click", function () {
+        swal({
+            title: "¿Estás seguro?",
+            text: "¿Deseas calcular la liquidación?",
+            type: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#DD6B55",
+            confirmButtonText: "Sí, calcular",
+            cancelButtonText: "No, cancelar",
+            closeOnConfirm: false
+        }, function (isConfirm) {
+            if (isConfirm) {
+                // Realizar la solicitud AJAX
+                $.ajax({
+                    url: '@Url.Action("calcularl", "CalcularLiquidacion")',
+                    type: 'POST',
+                    data: {
+                        idPersona: $('#idPersona').val(),
+                        tipoLiquidacion: $('#tipoLiquidacion').val(),
+                        tipoPreaviso: $('#tipoPreaviso').val(),
+                        fechaSalida: $('#fechaSalida').val()
+                    },
+                    dataType: 'json',
+                    success: function (response) {
+                        console.log(response); // Para depuración
+                        if (response.resultado && response.resultado.length > 0) {
+                            let data = response.resultado[0]; // Accede al primer elemento del array
+
+                            // Asigna los valores a los campos de entrada
+                            document.getElementById("vacaciones").value = formatearColones(data.vacacionesNoDistrutadas || 0);
+                            document.getElementById("preaviso").value = formatearColones(data.preaviso || 0);
+                            document.getElementById("aguinaldo").value = formatearColones(data.aguinaldo || 0);
+                            document.getElementById("cesantia").value = formatearColones(data.cesantia || 0);
+                            document.getElementById("monto").value = formatearColones(data.monto_pagar || 0);
+                            document.getElementById("salario").value = formatearColones(data.diasTrabajados || 0);
+
+                            // Muestra un mensaje de éxito
+                            swal("Cálculo realizado", "El cálculo de la liquidación fue exitoso.", "success");
+
+                            // Descarga el PDF automáticamente si se proporciona la URL
+                            if (response.pdfUrl) {
+                                descargarPdf(response.pdfUrl);
+                            }
+                        } else {
+                            swal("Error", response.mensaje, "error");
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        swal("Error", "Ocurrió un problema al calcular la liquidación.", "error");
+                    }
+                });
+            }
+        });
+    });
+
+    function formatearColones(valor) {
+        return new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'CRC' }).format(valor);
+    }
+
+    function descargarPdf(pdfUrl) {
+        const link = document.createElement('a');
+        link.href = pdfUrl;
+        link.target = '_blank'; // Opcional: abrir en una nueva pestaña
+        link.download = pdfUrl.split('/').pop(); // Extrae el nombre del archivo de la URL
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link); // Limpia el DOM
+    }
+
+    $(document).ready(function () {
+        $('#fechaSalida').flatpickr({
+            dateFormat: "Y-m-d",
+            locale: 'es',
+            defaultDate: new Date(),
+            minDate: new Date()
+        });
+    });
+    </script>
+
+
+
+
+
+
+
+
+
+}

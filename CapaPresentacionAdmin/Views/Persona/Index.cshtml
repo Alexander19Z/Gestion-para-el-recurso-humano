@@ -1,0 +1,743 @@
+﻿
+@{
+    ViewBag.Title = "Empleados";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+
+<ol class="breadcrumb mb-4 mt-4">
+    <li class="breadcrumb-item"><a href="index.html">Mantenimiento</a></li>
+    <li class="breadcrumb-item active">Persona</li>
+</ol>
+
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-user"></i> Lista de usuario
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-12">
+                <button type="button" class="btn btn-success" onclick="abrirModal(null)">Crear nuevo</button>
+            </div>
+        </div>
+
+
+        <hr />
+
+        <table id="tabla" class="display cell-border" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Apellidos</th>           
+                    <th>Cédula</th>
+                    <th>Usuario</th>
+                    <th>Correo empresarial</th>
+                    <th>Activo</th>
+                    <th>Acción</th>
+                    <th>Restaurar correo</th>
+                    <th>Fecha ingreso</th>
+                    <th>Fecha salida</th>
+                    <th>Tipo Usuario</th>
+                    <th>Sexo</th>
+                    <th>Departamento</th>
+                    <th>Puesto</th>
+                    <th>Cantidad de Hijos</th>
+                    <th>Estado Civil</th>
+                    <th>Número de teléfono</th>
+                    <th>Dirección</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+
+    </div>
+</div>
+
+
+
+
+
+
+<div class="modal fade" id="formModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white "   >
+                <h5 class="modal-title" id="exampleModalLabel">Crear persona</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-2">
+                    <input id="txtId" type="hidden" value="0" />
+                    <div class="row g-2">
+
+                        <div class="col-sm-6">
+                            <label for="txtnombre" class="form-label">Nombre</label>
+                            <input type="text" class="form-control" id="txtnombre" aria-describedby="emailHelp" autocomplete="off" required>
+
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="txtapellidoU" class="form-label">Primer apellido</label>
+                            <input type="text" class="form-control" id="txtapellidoU" aria-describedby="emailHelp" autocomplete="off" required>
+
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="txtapellidoS" class="form-label">Segundo apellido</label>
+                            <input type="text" class="form-control" id="txtapellidoS" aria-describedby="emailHelp" autocomplete="off" required>
+
+                        </div>
+
+                        <div class="col-sm-6">
+                            <label for="txtcedula" class="form-label">Cédula</label>
+                            <input type="text" class="form-control" id="txtcedula" aria-describedby="emailHelp" autocomplete="off" placeholder="Ejemplo: 116320487" pattern="\d*"
+                                   title="Solo se permiten números" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="txtsexo" class="form-label">Sexo </label>
+                            <select class="form-select" id="txtsexo" required>
+
+                                <option value="M">Masculino</option>
+                                <option value="F">Femenino</option>
+
+                            </select>
+
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="txtusuario" class="form-label">Usuario</label>
+                            <input type="text" class="form-control" id="txtusuario" aria-describedby="emailHelp" autocomplete="off" required>
+
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="txtcEmpresarial" class="form-label">Correo electrónico</label>
+                            <input type="email" class="form-control" id="txtcEmpresarial" aria-describedby="emailHelp" autocomplete="off" required>
+
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="sbactivo" class="form-label">Activo</label>
+                            <select class="form-select" id="sbactivo" required>
+
+                                <option value="1">Si</option>
+                                <option value="0">No</option>
+
+                            </select>
+
+                        </div>
+
+                        <div class="col-sm-6">
+                            <label for="txtfechaIngreso" class="form-label">Fecha ingreso</label>
+                            <input type="date" class="form-control" id="txtfechaIngreso" aria-describedby="emailHelp" autocomplete="off" required>
+
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="txtfechaSalida" class="form-label">Fecha salida</label>
+                            <input type="date" class="form-control" id="txtfechaSalida" aria-describedby="emailHelp " value="9999-12-31">
+
+                        </div>
+
+                        <div class="col-sm-6">
+                            <label for="sbatipoUsuario" class="form-label">Tipo usuario </label>
+                            <select class="form-select" id="sbatipoUsuario" required>
+
+                                <option value="Admin">Admin</option>
+                                <option value="empleado">Usuario</option>
+                                <option value="recursos humanos">Recursos Humanos</option>
+                                <option value="contabilidad">Contabilidad</option>
+                                <option value="lider">Líder</option>
+                                <option value="gerente">Gerente</option>
+
+                            </select>
+
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="txtdepartamento" class="form-label">Departamento</label>
+                            <select class="form-select" id="txtdepartamento" required></select>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <label for="txtPuesto" class="form-label">Puesto</label>
+                            <select class="form-select" id="txtPuesto" required></select>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <label for="txtCantidad_Hijos" class="form-label">Cantidad de hijos</label>
+                            <input type="text" id="txtCantidad_Hijos" class="form-control" value="" placeholder="Ejemplo: 1" pattern="\d*"
+                                   title="Solo se permiten números" oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="txtatelefono" class="form-label">Número de telefóno</label>
+                            <input type="text" class="form-control" id="txtatelefono" aria-describedby="emailHelp" autocomplete="off" required placeholder="Ejemplo: 89405102" pattern="\d*"
+                                   title="Solo se permiten números" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="txtProvincia" class="form-label">Provincia</label>
+                            <select class="form-select" id="txtProvincia" required>
+                                <option value="">Seleccione una provincia</option>
+                                <option value="San José">San José</option>
+                                <option value="Cartago">Cartago</option>
+                                <option value="Alajuela">Alajuela</option>
+                                <option value="Heredia">Heredia</option>
+                                
+                            </select>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <label for="txtCanton" class="form-label">Cantón</label>
+                            <select class="form-select" id="txtCanton" required>
+                                <option value="">Seleccione un cantón</option>
+                            </select>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <label for="txtDistrito" class="form-label">Distrito</label>
+                            <select class="form-select" id="txtDistrito" required>
+                                <option value="">Seleccione un distrito</option>
+                            </select>
+                        </div>
+
+
+                        <div class="col-sm-6" style="display: none;">
+                            <label for="txtDireccion" type="hidden" class="form-label">Dirección</label>
+                            <input type="text" class="form-control" id="txtDireccion" aria-describedby="emailHelp" autocomplete="off" required>
+
+                        </div>
+
+
+
+                        <div class="col-sm-6">
+                            <label for="sbEstadoCivil" class="form-label">Estado civil</label>
+                            <select class="form-select" id="sbEstadoCivil" required>
+
+                                <option value="Soltero">Soltero</option>
+                                <option value="Casado">Casado</option>
+                                <option value="Soltera">Soltera</option>
+                                <option value="Casada">Casada</option>
+                                <option value="Divorsiada">Divorsiada</option>
+                                <option value="Divorsiado">Divorsiado</option>
+
+                            </select>
+
+                        </div>
+
+                        <div class="row mt-2">
+                            <div class="col-12">
+                                <div id="mensajeError" class="alert alert-danger" role="alert">
+                                    This is a danger alert—check it out!
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                    </div>
+                </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary" onclick="guardar()">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+   </div>
+
+@section scripts{
+
+    <script>
+        $(document).ready(function () {
+            const datos = {
+                "San José": {
+                    "Curridabat": ["Granadilla", "Sánchez", "Tirrases"],
+                    "Desamparados": ["San Rafael", "San Antonio", "Damas"],
+                    "Escazú": ["San Miguel", "San Rafael", "San Antonio"]
+                },
+                "Alajuela": {
+                    "San Ramón": ["Piedades", "San Rafael", "Concepción"],
+                    "Atenas": ["Jesús", "Escobal", "San Isidro"],
+                    "Alajuela Centro": ["San José", "Carrizal", "Guácima"]
+                },
+                "Heredia": {
+                    "Heredia Centro": ["Mercedes", "San Francisco", "Ulloa"],
+                    "Barva": ["San Pablo", "San Roque", "Santa Lucía"],
+                    "Santo Domingo": ["Paracito", "San Miguel", "Santa Rosa"]
+                },
+                "Cartago": {
+                    "Cartago Centro": ["Oriental", "Occidental", "Carmen"],
+                    "Paraíso": ["Orosi", "Cachí", "Santiago"],
+                    "Turrialba": ["Santa Cruz", "Pavones", "Peralta"]
+                }
+            };
+
+            $('#txtProvincia').on('change', function () {
+                const provinciaSeleccionada = $(this).val();
+                $('#txtCanton').html('<option value="">Seleccione un cantón</option>');
+                $('#txtDistrito').html('<option value="">Seleccione un distrito</option>');
+
+                if (provinciaSeleccionada && datos[provinciaSeleccionada]) {
+                    $.each(datos[provinciaSeleccionada], function (canton, distritos) {
+                        $('#txtCanton').append(`<option value="${canton}">${canton}</option>`);
+                    });
+                }
+            });
+
+            $('#txtCanton').on('change', function () {
+                const provinciaSeleccionada = $('#txtProvincia').val();
+                const cantonSeleccionado = $(this).val();
+                $('#txtDistrito').html('<option value="">Seleccione un distrito</option>');
+
+                if (provinciaSeleccionada && cantonSeleccionado && datos[provinciaSeleccionada][cantonSeleccionado]) {
+                    $.each(datos[provinciaSeleccionada][cantonSeleccionado], function (index, distrito) {
+                        $('#txtDistrito').append(`<option value="${distrito}">${distrito}</option>`);
+                    });
+                }
+            });
+        });
+        var tablaData;
+        var filaSelecionada;
+
+        //Para llenar la tabla, identificador para el tributi id = #
+
+        tablaData = $("#tabla").DataTable({
+            responsive: true,
+            ordering: false,
+            "ajax": {
+
+                url: '@Url.Action("listar_Persona", "Persona")',
+                type: "GET",
+                dataType: "json",
+
+
+            },
+            "columns": [
+                
+                { "data": "nombre" },
+                { "data": "apellido" },
+                { "data": "cedula" },
+                { "data": "usuario" },
+                { "data": "correo_Empresarial" },
+                {
+                    "data": "activo",
+                    "render": function (valor) {
+                        // Evaluamos si valor es verdaderamente `true` o `1`
+                        if (valor === true || valor === 1) {
+                            return '<span class="badge bg-success">Sí</span>';
+                        } else {
+                            return '<span class="badge bg-danger">No</span>';
+                        }
+                    }
+                },
+                {
+                    "defaultContent": '<button class="btn btn-primary btn-sm  btn-editar">  <i class=" fas fa-pen me-1" > </i></button>' + '<button class="btn btn-danger btn-sm   btn-eliminar">  <i class=" fas fa-trash me-1" > </i></button>',
+                    "orderable": false,
+                    "searchable": false,
+                    "width": "90px"
+
+                },
+
+                {
+                    "defaultContent": '<button class="btn btn-primary btn-sm btn-restaurar">  <i class=" fas fa-check me-1" > </i></button>',
+
+                    "orderable": false,
+                    "searchable": false,
+                    "width": "90px"
+
+                },
+                {
+                    "data": "fecha_ingreso",
+                    "render": function (data) {
+                        return formatearFecha(data);
+                    }
+                },
+                {
+                    "data": "fecha_salida",
+                    "render": function (data) {
+                        
+                        return formatearFecha(data);
+                    }
+                },
+                { "data": "tipo_Usuario" },
+
+                { "data": "sexo" },
+                { "data": "departamentoDescripcion" },
+                { "data": "puestoDescripcion" },
+                { "data": "cantidad_Hijos" },
+                { "data": "estado_Civil" },
+                { "data": "telefono"},
+                { "data": "direccion" }
+                
+            ],
+            "language": {
+
+                "url": "https://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json"
+            }
+
+        });
+
+     
+
+
+
+
+        //abrir el model emergente
+        function abrirModal(json) {
+            $("#txtid").val("0");
+            $("#txtnombre").val("");
+            $("#txtapellidos").val("");
+            $("#txtcedula").val("");
+            $("#txtsexo").val("");
+            $("#txtusuario").val("");
+            $("#txtcEmpresarial").val("");
+            $("#sbactivo").val(1);
+            $("#txtfechaIngreso").val();
+            $("#txtfechaSalida").val();
+            $("#sbatipoUsuario").val("");
+            $("#txtdepartamento").val("");
+            $("#txtPuesto").val("");
+            $("#txtCantidad_Hijos").val("");
+            $("#sbEstadoCivil").val("");
+            $("#txtatelefono").val("");
+            $("#txtDistrito").val("");
+            $("#txtCanton").val("");
+            $("#txtProvincia").val("");
+            $("#txtDireccion").val();
+            $("#mensajeError").hide();
+
+            $("#formModal").modal("show")
+            if (json != null) {
+                var apellidos = json.apellido.split(' ');
+                $("#txtId").val(json.id_Persona);
+                $("#txtnombre").val(json.nombre);
+                $("#txtapellidoU").val(apellidos[0]);
+                $("#txtapellidoS").val(apellidos[1]);
+                $("#txtcedula").val(json.cedula);
+                $("#txtsexo").val(json.sexo != "M" ? "F":"M");
+                $("#txtusuario").val(json.usuario);
+                $("#txtcEmpresarial").val(json.correo_Empresarial);
+                $("#sbactivo").val(json.activo == true ? 1 : 0);
+                $("#txtcPersonal").val(json.correo_Personal);
+                $("#txtfechaIngreso").val(formatearFecha(json.fecha_ingreso));
+                $("#txtfechaSalida").val(formatearFecha(json.fecha_salida));
+                $("#sbatipoUsuario").val(
+                    json.tipo_Usuario === "admin" ? "Admin" :
+                    json.tipo_Usuario === "gerente" ? "Gerente" :
+                    json.tipo_Usuario === "empleado" ? "empleado" :
+                    json.tipo_Usuario === "recursos humanos" ? "recursos humanos" :
+                    json.tipo_Usuario === "contabilidad" ? "contabilidad" :
+                    json.tipo_Usuario === "lider" ? "lider" : ""
+                );
+                $("#txtdepartamento").val(json.id_Departamento);
+                $("#txtPuesto").val(json.id_Puesto);
+                $("#txtCantidad_Hijos").val(json.cantidad_Hijos);
+                $("#sbEstadoCivil").val(json.estado_Civil);
+                $("#txtatelefono").val(json.telefono);
+                $("#txtDistrito").val(json.distrito);
+                $("#txtCanton").val(json.canton);
+                $("#txtProvincia").val(json.provincia);
+                $("#txtDireccion").val(json.direccion);
+            }
+
+        }
+        //funcion que esta dentro de una tabla esto sirve tambien para el boton contraseña que quiero
+
+        $("#tabla tbody").on("click", '.btn-editar', function () {
+            var filaSeleccionada = $(this).closest("tr");
+
+            
+            if (filaSeleccionada.hasClass("child")) {
+                
+                filaSeleccionada = filaSeleccionada.prev();
+            }
+
+            var data = tablaData.row(filaSeleccionada).data();
+
+            abrirModal(data);
+        });
+
+        //Para darle el formato a la fecha
+        function formatearFecha(fechaString) {
+            var fechaMilisegundos = parseInt(fechaString.substr(6));
+            var fecha = new Date(fechaMilisegundos);
+            var fechaFormateada = fecha.toISOString().split('T')[0];
+            return fechaFormateada;
+        }
+
+        //gurardar
+
+        function guardar() {
+            var persona = {
+        
+                id_Persona: $("#txtId").val(),
+                nombre: $("#txtnombre").val(),
+                apellido: $("#txtapellidoU").val(),
+                apellidoS: $("#txtapellidoS").val(),
+                cedula: $("#txtcedula").val(),
+                sexo: $("#txtsexo").val() != "M" ? "F" : "M",
+                usuario: $("#txtusuario").val(),
+                correo_Empresarial: $("#txtcEmpresarial").val(),
+                activo: $("#sbactivo").val() == true ? 1 : 0,
+                fecha_ingreso: $("#txtfechaIngreso").val(),
+                fecha_salida: $("#txtfechaSalida").val(),
+                tipo_Usuario: $("#sbatipoUsuario").val() === "admin" ? "admin" : $("#sbatipoUsuario").val(),
+                id_Departamento: $("#txtdepartamento").val(),
+                id_Puesto: $("#txtPuesto").val(),
+                departamentoDescripcion: "",
+                puestoDescripcion: "",
+                cantidad_Hijos: $("#txtCantidad_Hijos").val(),
+                estado_Civil: $("#sbEstadoCivil").val(),
+                telefono: $("#txtatelefono").val(),
+                direccion: $("#txtDireccion").val(),
+                distrito: $("#txtDistrito").val(),
+                canton: $("#txtCanton").val(),
+                provincia: $("#txtProvincia").val(),
+
+
+
+            }
+            
+
+
+            jQuery.ajax({
+                url: '@Url.Action("guardarPersona", "Persona")',
+                type: "POST",
+                data: JSON.stringify({ obj: persona }),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    $(".modal-body").LoadingOverlay("hide");
+                    //usuario nuevo
+                    if (persona.id_Persona == 0) {
+                        if (data.resultado != 0) {
+                         
+                            persona.id_Persona = data.resultado;
+                            tablaData.row.add(persona).draw(false);
+
+                            $("#formModal").modal("hide");
+                            location.reload();
+                        } else {
+                            $("#mensajeError").text(data.mensaje);
+                            $("#mensajeError").show();
+
+                        }
+
+
+
+                    } else {
+                        //usuario editar
+                        if (data.resultado) {
+
+                            tablaData.row(filaSelecionada).data(persona);
+                            filaSelecionada = null;
+                            $("#formModal").modal("hide");
+                            location.reload();
+                        } else {
+                           $("#mensajeError").text(data.mensaje);
+                            $("#mensajeError").show();
+
+                        }
+
+
+
+                    }
+                   
+                },
+                error: function (error) {
+                    $(".modal-body").LoadingOverlay("hide");
+                    $("#mensajeError").text("Error");
+                    $("#mensajeError").show();
+                },
+                beforeSend: function () {
+
+                    //Cuando realize algo durante la ejecución
+
+                    $(".modal-body").LoadingOverlay("show", {
+                        imageResizeFactor: 2,
+                        text: "Cargando.....",
+                        size: 14
+
+
+
+                    })
+
+
+
+                }
+
+            });
+        }
+
+
+         $("#tabla tbody").on("click", '.btn-eliminar', function () {
+
+
+             var usuarioSelecionado = $(this).closest("tr");
+
+             if (usuarioSelecionado.hasClass("child")) {
+                 usuarioSelecionado = usuarioSelecionado.prev();
+             }
+
+
+             var data = tablaData.row(usuarioSelecionado).data();
+
+
+            console.log(data);
+
+            swal({
+                title: "¿Desea eliminar el usuario?",
+                text: "¿Estas seguro?",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonClass: "btn-primary",
+                confirmButtonText: "Si",
+                cancelButtonText: "No",
+
+
+                closeOnConfirm: true
+            },
+                function () {
+
+                    jQuery.ajax({
+                        url: '@Url.Action("eliminarPersona", "Persona")',
+                        type: "POST",
+                        data: JSON.stringify({ id: data.id_Persona }),
+                        dataType: "json",
+                        contentType: "application/json; charset=utf-8",
+                        success: function (data) {
+                            if (data.resultado) {
+                                tablaData.row(usuarioSelecionado).remove().draw();
+                            } else {
+                                swal("No se puede eliminar",data.mensaje,"error")
+                            }
+                        },
+                        error: function () {
+
+                        },
+                        beforeSend: function () {
+
+                        },
+                    });
+
+                });
+
+        });
+
+
+        function restaurarContrasena(id, correoEmpresarial, contrasena, usuario) {
+        jQuery.ajax({
+        url: '@Url.Action("restaurarCorreo", "Persona")',
+        type: "POST",
+        data: JSON.stringify({ id: id, correoEmpresarial: correoEmpresarial, contrasena: contrasena, usuario: usuario }),
+        dataType: "json",
+        contentType: "application/json; charset=utf-8",
+        success: function (data) {
+            if (data.resultado) {
+                // Aquí puedes hacer algo con la respuesta si es necesario
+                swal("Contraseña restaurada", "", "success")
+
+            } else {
+                swal("No se pudo restaurar contraseña");
+            }
+        },
+        error: function () {
+            // Manejar errores de la solicitud AJAX si es necesario
+            swal("Error al restaurar contraseña");
+        },
+        beforeSend: function () {
+            // Puedes agregar alguna lógica de carga aquí si lo necesitas
+
+        },
+        });
+
+
+
+        }
+
+
+
+        // Asigna un controlador de eventos click al botón de restaurar contraseña en la tabla
+        $("#tabla tbody").on("click", '.btn-restaurar', function () {
+            var filaSeleccionada = $(this).closest("tr");
+            var data = tablaData.row(filaSeleccionada).data();
+
+            swal({
+                title: "¿Deseas restaurar la contraseña?",
+                text: "¿Estás seguro?",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonClass: "btn-primary",
+                confirmButtonText: "Sí",
+                cancelButtonText: "No",
+                closeOnConfirm: true
+            },
+                function () {
+                    // Llama a la función restaurarContraseña con los datos necesarios
+                    restaurarContrasena(data.id_Persona, data.correo_Empresarial, data.contrasena, data.usuario);
+                });
+        });
+
+
+
+        function cargarDepartamentos() {
+                $.ajax({
+                    url: '@Url.Action("getDepartamento", "Persona")',
+                    type: "GET",
+                    dataType: "json",
+                    success: function (data) {
+                        var $select = $("#txtdepartamento");
+                        $select.empty(); // Limpiar opciones existentes
+                        $.each(data.data, function (index, item) {
+
+                            $select.append($('<option>', {
+                                value: item.id_Departamento, // Asignar valor a la opción
+                                text: item.descripcion  // Texto que se muestra
+                            }));
+                        });
+                    },
+                    error: function (error) {
+                        console.error("Error al cargar departamentos:", error);
+                    }
+                });
+        }
+
+                // Llama a la función al cargar la página o cuando sea necesario
+                $(document).ready(function () {
+                    cargarDepartamentos();
+                });
+
+                 function cargarPuesto() {
+                         $.ajax({
+                             url: '@Url.Action("getPuesto", "Persona")',
+                             type: "GET",
+                             dataType: "json",
+                             success: function (data) {
+                                 var $select = $("#txtPuesto");
+                                 $select.empty(); // Limpiar opciones existentes
+                                 $.each(data.data, function (index, item) {
+                                     $select.append($('<option>', {
+                                         value: item.id_Puesto, // Asignar valor a la opción
+                                         text: item.descripcion  // Texto que se muestra
+                                     }));
+                                 });
+                             },
+                             error: function (error) {
+                                 console.error("Error al cargar puesto:", error);
+                             }
+                         });
+                 }
+
+                 // Llama a la función al cargar la página o cuando sea necesario
+                 $(document).ready(function () {
+                     cargarPuesto();
+                 });
+
+
+       
+
+
+
+
+    </script>
+
+
+}

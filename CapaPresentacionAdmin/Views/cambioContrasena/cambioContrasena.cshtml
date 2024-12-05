@@ -1,0 +1,180 @@
+﻿
+@{
+    ViewBag.Title = "Cambio contraseña";
+    Layout = "~/Views/Shared/_Layout.cshtml"
+        
+        
+        
+  ;
+
+
+
+
+}
+
+
+<head>
+   
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f8f9fa;
+        }
+
+        .card {
+            width: 400px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <div class="card-header text-center">
+            <h4>Cambiar Contraseña</h4>
+        </div>
+        <div class="card-body">
+            <form id="changePasswordForm">
+
+
+                <div class="form-group">
+                    <label for="persona">Empleado:</label>
+                   
+                    <input type="text" class="form-control" id="persona" value="@ViewBag.NombreUsuario" readonly>
+
+                 
+                    <input type="hidden" id="idPersona" value="@ViewBag.IdUsuario">
+                </div>
+
+
+                <div class="form-group">
+                    <label for="oldPassword">Contraseña Anterior</label>
+                    <div class="input-group">
+                        <input type="password" class="form-control" id="oldPassword" required>
+                        <div class="input-group-append">
+                            <span class="input-group-text" id="toggleOldPassword"><i class="fa fa-eye"></i></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="newPassword">Nueva Contraseña</label>
+                    <div class="input-group">
+                        <input type="password" class="form-control" id="newPassword" required>
+                        <div class="input-group-append">
+                            <span class="input-group-text" id="toggleNewPassword"><i class="fa fa-eye"></i></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">Confirmar Nueva Contraseña</label>
+                    <div class="input-group">
+                        <input type="password" class="form-control" id="confirmPassword" required>
+                        <div class="input-group-append">
+                            <span class="input-group-text" id="toggleConfirmPassword"><i class="fa fa-eye"></i></span>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" id="btn-enviar" class="btn btn-primary btn-block">Cambiar Contraseña</button>
+            </form>
+        </div>
+    </div>
+
+
+
+    @section scripts {
+        <script>
+            $(document).ready(function () {
+
+
+                $('#toggleOldPassword').on('click', function () {
+                    var passwordField = $('#oldPassword');
+                    var passwordFieldType = passwordField.attr('type');
+                    passwordField.attr('type', passwordFieldType === 'password' ? 'text' : 'password');
+                    $(this).find('i').toggleClass('fa-eye fa-eye-slash');
+                });
+
+                // Toggle para la nueva contraseña
+                $('#toggleNewPassword').on('click', function () {
+                    var passwordField = $('#newPassword');
+                    var passwordFieldType = passwordField.attr('type');
+                    passwordField.attr('type', passwordFieldType === 'password' ? 'text' : 'password');
+                    $(this).find('i').toggleClass('fa-eye fa-eye-slash');
+                });
+
+                // Toggle para la confirmación de la contraseña
+                $('#toggleConfirmPassword').on('click', function () {
+                    var passwordField = $('#confirmPassword');
+                    var passwordFieldType = passwordField.attr('type');
+                    passwordField.attr('type', passwordFieldType === 'password' ? 'text' : 'password');
+                    $(this).find('i').toggleClass('fa-eye fa-eye-slash');
+                });
+
+
+
+
+
+
+
+
+
+
+
+
+            $('#changePasswordForm').on('submit', function (event) {
+                event.preventDefault(); // Evita que el formulario se envíe de la forma tradicional
+                debugger;
+                var idPersona = $('#idPersona').val(); 
+                var oldPassword = $('#oldPassword').val();
+                var newPassword = $('#newPassword').val();
+                var confirmPassword = $('#confirmPassword').val();
+
+                // Validar que la nueva contraseña y la confirmación coincidan
+                if (newPassword.length < 9 || newPassword !== confirmPassword) { 
+                    swal("Error", "Las contraseñas no coinciden o debe tener al menos 12 caracteres, inténtelo de nuevo.", "error");
+                    return;
+                }
+
+                // Llamada AJAX
+                $.ajax({
+                     url: '@Url.Action("cambioContrasena", "cambioContrasena")',
+                    type: 'POST',
+                    data: {
+                        id_Persona: idPersona,
+                        oldPassword: oldPassword,
+                        newPassword: newPassword
+                    },
+                    dataType: 'json',
+                    success: function (response) {
+                        if (response.resultado) {
+                            swal("Éxito", "Tu contraseña ha sido cambiada con éxito.", "success");
+                             $('#idPersona').val("");
+                             $('#oldPassword').val("");
+                             $('#newPassword').val("");
+                             $('#confirmPassword').val("");
+                        } else {
+                            swal("Error", response.mensaje, "error");
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        swal("Error", "No se pudo cambiar la contraseña. Inténtalo de nuevo más tarde.", "error");
+                    }
+                });
+            });
+        });
+        </script>
+    }
+
+
+
+
+
+
+
+
+
+
+
+</body>
+

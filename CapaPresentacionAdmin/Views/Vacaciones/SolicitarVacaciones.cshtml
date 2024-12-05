@@ -1,0 +1,492 @@
+﻿
+@{
+    ViewBag.Title = "SolicitarVacaciones";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    <link href="~/Content/CalendarioStyle.css" rel="stylesheet" />
+    var fechasSolicitadas = ViewBag.FechasSolicitadas as List<string> ?? new List<string>();
+    var jsonData = Newtonsoft.Json.JsonConvert.SerializeObject(fechasSolicitadas);
+
+}
+@{
+    decimal? diaAcumulado = TempData["DiaAcumulado"] as decimal?;
+    decimal? diasSoli = TempData["DiasSoli"] as decimal?;
+    decimal? monto = TempData["Monto"] as decimal?;
+
+
+
+}
+
+
+<h2 class="mt-3">Seleccionar Vacaciones</h2>
+
+<div class="row">
+    <div class="col-sm-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Saldo de vacaciones</h5>
+                <p class="card-text">@TempData["DiaAcumulado"]</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Días solicitados</h5>
+                <p class="card-text">@TempData["DiasSoli"]</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<h1 class="title">Calendario</h1>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="calendar">
+            <div class="calendar__info">
+                <div class="calendar__prev" id="prev-month">&#9664;</div>
+                <div class="calendar__month" id="month"></div>
+                <div class="calendar__year" id="year"></div>
+                <div class="calendar__next" id="next-month">&#9654;</div>
+            </div>
+
+            <div class="calendar__week">
+                <div class="calendar__day calendar__item">Lu</div>
+                <div class="calendar__day calendar__item">Ma</div>
+                <div class="calendar__day calendar__item">Mi</div>
+                <div class="calendar__day calendar__item">Ju</div>
+                <div class="calendar__day calendar__item">Vi</div>
+                <div class="calendar__day calendar__item">Sa</div>
+                <div class="calendar__day calendar__item">Do</div>
+            </div>
+
+            <div class="calendar__dates" id="dates"></div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card mt-4 mt-md-0">
+            <div class="card-body">
+                <h5 class="card-title">Días seleccionados</h5>
+
+                <div id="selectedDaysContainer">
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<form id="vacationForm" action="@Url.Action("SolicitarVacaciones","Vacaciones")" method="post">
+    <input type="hidden" name="selectedDays" id="selectedDays">
+    <button type="submit" class="btn btn-primary mt-3">Enviar Días Seleccionados</button>
+</form>
+
+
+
+
+
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    .title {
+        text-align: center;
+        color: black;
+    }
+
+    .calendar {
+        background: #f0f0f0;
+        width: 100%;
+        margin: 1em auto;
+        padding: .5em 0;
+    }
+
+    .calendar__info {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 2em;
+        font-size: 1.2em;
+        text-transform: uppercase;
+    }
+
+    .calendar__prev, .calendar__next {
+        color: #333;
+        cursor: pointer;
+        font-size: 1.3em;
+    }
+
+    .calendar__week, .calendar__dates {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        grid-gap: 10px;
+    }
+
+    .calendar__month, .calendar__year {
+        padding: .5em 1em;
+    }
+
+    .calendar__item {
+        text-align: center;
+        line-height: 2;
+        cursor: pointer;
+    }
+
+        .calendar__item.selected {
+            background-color: #007bff;
+            color: white;
+            border-radius: 50%;
+        }
+
+    .calendar__today {
+        background: lightcoral;
+        color: white;
+        width: 50%;
+        border-radius: 50%;
+        margin: auto;
+    }
+
+    .calendar__last-days {
+        opacity: .3;
+    }
+
+    .calendar__past-date {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+
+    .requested-date {
+        background-color: #800080; /* Color morado */
+        color: white;
+        border-radius: 50%;
+    }
+
+    
+
+    .calendar__weekend {
+        background-color: #f0f0f0;
+        color: #ccc;
+        pointer-events: none;
+    }
+
+    .calendar__past-date {
+        color: #aaa;
+        pointer-events: none;
+    }
+
+    .calendar__feriado {
+        background-color: #ffdfba; /* Color para feriados */
+        position: relative;
+    }
+
+    .feriado-name {
+        font-size: 10px;
+        color: #a45e00;
+        text-align: center;
+        position: absolute;
+        bottom: -15px; /* Ajuste la posición del nombre */
+        width: 100%;
+    }
+    .blank-day {
+        background-color: transparent; /* Fondo transparente */
+        pointer-events: none; /* Evita que sean seleccionables */
+        color: transparent; /* Texto invisible */
+    }
+</style>
+
+
+
+@section scripts{
+    <script>
+        let notificaciones = @Html.Raw(jsonData);
+
+        const requestedDates = notificaciones.map(dateString => {
+            const [day, month, year] = dateString.split('/').map(Number);
+            return new Date(year, month - 1, day);
+        });
+
+        let monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+        let currentDate = new Date();
+        let currentDay = currentDate.getDate();
+        let monthNumber = currentDate.getMonth();
+        let currentYear = currentDate.getFullYear();
+
+        let dates = document.getElementById('dates');
+        let month = document.getElementById('month');
+        let year = document.getElementById('year');
+
+        let prevMonthDOM = document.getElementById('prev-month');
+        let nextMonthDOM = document.getElementById('next-month');
+
+        let selectedDates = [];
+
+        month.textContent = monthNames[monthNumber];
+        year.textContent = currentYear.toString();
+
+        prevMonthDOM.addEventListener('click', () => lastMonth());
+        nextMonthDOM.addEventListener('click', () => nextMonth());
+
+        // Lista de feriados en Costa Rica con nombres
+        const feriados = [
+            { date: '01/01', name: 'Año Nuevo' },
+            { date: '11/04', name: 'Juan Santamaría' },
+            { date: '01/05', name: 'Día del Trabajador' },
+            { date: '25/07', name: 'Anexión de Guanacaste' },
+            { date: '02/08', name: 'Virgen de los Angeles' },
+            { date: '15/08', name: 'Día de la Madre' },
+            { date: '15/09', name: 'Independencia' },
+            { date: '01/12', name: 'Abolición del ejercito' },
+            { date: '25/12', name: 'Navidad' }
+        ];
+
+        const isFeriado = (day, month) => {
+            const formattedDate = `${day.toString().padStart(2, '0')}/${(month + 1).toString().padStart(2, '0')}`;
+            return feriados.find(f => f.date === formattedDate);
+        }
+
+        const writeMonth = (month) => {
+            dates.innerHTML = '';
+            for (let i = startDay(); i > 0; i--) {
+                // Simplemente creamos un div vacío para estos días
+                dates.innerHTML += `<div class="calendar__date calendar__item calendar__last-days blank-day"></div>`;
+            }
+
+           
+
+
+            for (let i = 1; i <= getTotalDays(month); i++) {
+                let isPastDate = false;
+                if (currentYear < new Date().getFullYear() || (currentYear === new Date().getFullYear() && month < new Date().getMonth())) {
+                    isPastDate = true;
+                } else if (currentYear === new Date().getFullYear() && month === new Date().getMonth()) {
+                    isPastDate = i < new Date().getDate();
+                }
+
+                let isRequestedDate = notificaciones.some(dateString => {
+                    let [day, month, year] = dateString.split('/').map(Number);
+                    return day === i && month === (monthNumber + 1) && year === currentYear;
+                });
+
+                let feriadoInfo = isFeriado(i, month); // Verificar si es feriado
+
+                let classNames = 'calendar__date calendar__item';
+                if (isPastDate) classNames += ' calendar__past-date';
+                if (isRequestedDate) classNames += ' requested-date';
+                if (feriadoInfo) classNames += ' calendar__feriado';
+                //if (i === currentDay && monthNumber === currentDate.getMonth() && currentYear === currentDate.getFullYear()) {
+                //    classNames += ' calendar__today';
+                //}
+
+                // Bloquear fines de semana
+                let date = new Date(currentYear, month, i);
+                let isWeekend = (date.getDay() === 0 || date.getDay() === 6);
+                if (isWeekend) classNames += ' calendar__weekend';
+
+                dates.innerHTML += `
+                    <div class="${classNames}" data-day="${i}" data-month="${monthNumber}" data-year="${currentYear}">
+                        ${i}
+                        ${feriadoInfo ? `<div class="feriado-name">${feriadoInfo.name}</div>` : ''}
+                    </div>`;
+            }
+
+            document.querySelectorAll('.calendar__item').forEach(item => {
+                item.addEventListener('click', function () {
+                    if (
+                        !this.classList.contains('calendar__past-date') && // Verifica que no sea del mes pasado
+                        !this.classList.contains('calendar__weekend') &&
+                        !this.classList.contains('calendar__feriado') &&
+                        !this.classList.contains('requested-date')
+                    ) {
+                        selectDay(this);
+                    }
+                });
+            });
+        }
+
+        const selectDay = (element) => {
+            const day = parseInt(element.getAttribute('data-day'));
+            const month = parseInt(element.getAttribute('data-month')) + 1;
+            const year = parseInt(element.getAttribute('data-year'));
+
+            const dateString = `${day}/${month}/${year}`;
+            const existingIndex = selectedDates.findIndex(d => d.date === dateString);
+
+            if (existingIndex > -1) {
+                selectedDates.splice(existingIndex, 1);
+                element.classList.remove('selected');
+            } else {
+                selectedDates.push({ date: dateString, type: 'full' });
+                element.classList.add('selected');
+            }
+
+            updateSelectedDaysDisplay();
+        }
+
+        const updateSelectedDaysDisplay = () => {
+            const selectedDaysContainer = document.getElementById('selectedDaysContainer');
+            selectedDaysContainer.innerHTML = '<i class="fas fa-calendar"></i>';
+
+            selectedDates.forEach((selectedDate, index) => {
+                const dayDiv = document.createElement('div');
+                dayDiv.classList.add('selected-day');
+                dayDiv.innerHTML = `
+                    <span>${selectedDate.date}</span>
+                    <select onchange="updateDayType(${index}, this.value)">
+                        <option value="full" ${selectedDate.type === 'full' ? 'selected' : ''}>Día completo</option>
+                        <option value="half" ${selectedDate.type === 'half' ? 'selected' : ''}>Medio día en la mañana</option>
+                        <option value="half" ${selectedDate.type === 'half' ? 'selected' : ''}>Medio día en la tarde</option>
+                    </select>
+                    <button onclick="removeSelectedDay(${index})">X</button>
+                `;
+                selectedDaysContainer.appendChild(dayDiv);
+            });
+        }
+
+        const updateDayType = (index, type) => {
+            selectedDates[index].type = type;
+        }
+
+        const removeSelectedDay = (index) => {
+            document.querySelectorAll('.calendar__item').forEach(item => {
+                const day = parseInt(item.getAttribute('data-day'));
+                const month = parseInt(item.getAttribute('data-month')) + 1;
+                const year = parseInt(item.getAttribute('data-year'));
+
+                const dateString = `${day}/${month}/${year}`;
+
+                if (selectedDates[index].date === dateString) {
+                    item.classList.remove('selected');
+                }
+            });
+
+            selectedDates.splice(index, 1);
+            updateSelectedDaysDisplay();
+        }
+
+        const getTotalDays = month => {
+            if (month === -1) month = 11;
+
+            if (month == 0 || month == 2 || month == 4 || month == 6 || month == 7 || month == 9 || month == 11) {
+                return 31;
+            } else if (month == 3 || month == 5 || month == 8 || month == 10) {
+                return 30;
+            } else {
+                return isLeap() ? 29 : 28;
+            }
+        }
+
+        const isLeap = () => {
+            return ((currentYear % 100 !== 0) && (currentYear % 4 === 0) || (currentYear % 400 === 0));
+        }
+
+        const startDay = () => {
+            let start = new Date(currentYear, monthNumber, 1);
+            return ((start.getDay() - 1) === -1) ? 6 : start.getDay() - 1;
+        }
+
+        const lastMonth = () => {
+            if (monthNumber !== 0) {
+                monthNumber--;
+            } else {
+                monthNumber = 11;
+                currentYear--;
+            }
+            setNewDate();
+        }
+
+        const nextMonth = () => {
+            if (monthNumber !== 11) {
+                monthNumber++;
+            } else {
+                monthNumber = 0;
+                currentYear++;
+            }
+            setNewDate();
+        }
+
+        const setNewDate = () => {
+            currentDate.setFullYear(currentYear, monthNumber, currentDay);
+            month.textContent = monthNames[monthNumber];
+            year.textContent = currentYear.toString();
+            writeMonth(monthNumber);
+        }
+
+
+
+        document.getElementById('vacationForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+            const selectedDays = selectedDates;
+            console.log(selectedDays); // Agrega este log para verificar los datos
+            $.ajax({
+                url: '@Url.Action("SolicitarVacacione", "Vacaciones")',
+                type: "POST",
+                data: JSON.stringify(selectedDays),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    if (data.success) {
+
+                        swal("Solicitud enviada correctamente", "", "success");
+                        resetForm();
+                    } else {
+                        swal("Error", data.message,"error");
+                    }
+                },
+                error: function (xhr, status, error) {
+                    swal("Error", data.message, "error");
+                },
+                beforeSend: function () {
+                    $.LoadingOverlay("show", {
+                        image: "",
+                        progress: true
+                    });
+                    var count = 0;
+                    var interval = setInterval(function () {
+                        if (count >= 100) {
+                            clearInterval(interval);
+                            $.LoadingOverlay("hide");
+                            return;
+                        }
+                        count += 10;
+                        $.LoadingOverlay("progress", count);
+                    }, 300);
+                }
+
+
+
+
+
+
+            });
+
+
+        });
+
+        writeMonth(monthNumber);
+
+
+
+        //Limpieda del formulario
+
+        function resetForm() {
+
+            selectedDates = [];
+
+
+            updateSelectedDaysDisplay();
+            document.querySelectorAll('.calendar__item.selected').forEach(item => {
+                item.classList.remove('selected');
+            });
+
+
+            document.getElementById('vacationForm').reset();
+        }
+
+    </script>
+}
+

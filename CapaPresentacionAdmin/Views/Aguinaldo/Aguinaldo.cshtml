@@ -1,0 +1,356 @@
+﻿
+@{
+    ViewBag.Title = "Aguinaldo";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<ol class="breadcrumb mb-4 mt-4">
+    <li class="breadcrumb-item"><a href="#">Mantenimiento</a></li>
+    <li class="breadcrumb-item active">Aguinaldo</li>
+</ol>
+
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-user"></i> Aguinaldo
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-12">
+                <button type="button" class="btn btn-success" onclick="abrirModal(null)">Crear nuevo</button>
+            </div>
+        </div>
+
+
+        <hr />
+
+        <table id="tabla" class="display cell-border" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Id aguinaldo</th>
+                    <th>Monto total</th>
+                    <th>Fecha de pago</th>
+                    <th>Persona</th>
+                    <th>Acción</th>
+
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+
+    </div>
+</div>
+
+<div class="modal fade" id="formModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white ">
+                <h5 class="modal-title" id="exampleModalLabel">Crear aguinaldo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-2">
+                    <input id="txtId" type="hidden" value="0" />
+                    <div class="row g-2">
+
+                        <div class="col-sm-6">
+                            <label for="txtmontoTotal" class="form-label">Monto total</label>
+                            <input type="text" class="form-control" id="txtmontoTotal" aria-describedby="emailHelp" autocomplete="off">
+
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="txtfecha_Pago" class="form-label">Fecha de pago</label>
+                            <input type="date" class="form-control" id="txtfecha_Pago" aria-describedby="emailHelp" autocomplete="off">
+
+                        </div>
+                        
+
+                        <div class="col-sm-6">
+                            <label for="txtidPersona" class="form-label">Persona</label>
+                            <select class="form-select" id="txtidPersona" required></select>
+                        </div>
+
+
+                        <div class="row mt-2">
+                            <div class="col-12">
+                                <div id="mensajeError" class="alert alert-danger" role="alert">
+                                    This is a danger alert—check it out!
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-primary" onclick="guardar()">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+
+@section scripts{
+    <script>
+         var tablaData;
+         var filaSelecionada;
+
+ //Para llenar la tabla, identificador para el tributi id = #
+
+        tablaData = $("#tabla").DataTable({
+            responsive: true,
+            ordering: false,
+            "ajax": {
+
+                url: '@Url.Action("listar_Aguinaldo","Aguinaldo")',
+                type: "GET",
+                dataType: "json",
+
+            },
+
+            "columns": [
+
+
+                 { "data": "id_Aguinaldo" },
+                {
+                    "data": "monto_Total",
+                    "render": function (data) {
+                        return formatearColones(data);
+                    }
+
+
+                },
+                   {
+                       "data": "fecha_Pago",
+                       "render": function (data) {
+                           return formatearFecha(data);
+                       }
+                   },
+                {
+                    "data": null,
+                    "render": function (data, type, row) {
+                        return row.nombre + ' ' + row.apellido;
+                    }
+                },
+
+                 {
+                         "defaultContent": '<button class="btn btn-primary btn-sm  btn-editar">  <i class=" fas fa-pen me-1" > </i></button>' + '<button class="btn btn-danger btn-sm   btn-eliminar">  <i class=" fas fa-trash me-1" > </i></button>',
+                         "orderable": false,
+                         "searchable": false,
+                         "width": "90px"
+
+                     }
+
+
+
+
+
+                 ],
+                 "language": {
+
+                     "url": "https://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json"
+                 }
+
+
+
+
+
+
+
+              });
+  //abrir el model emergente
+        function abrirModal(json) {
+            $("#txtId").val("0");
+            $("#txtmontoTotal").val("");
+            $("#txtfecha_Pago").val("");
+            $("#txtidPersona").val("");
+            $("#mensajeError").hide();
+
+            $("#formModal").modal("show");
+            if (json != null) {
+                $("#txtId").val(json.id_Aguinaldo);
+                $("#txtmontoTotal").val(json.monto_Total);
+                $("#txtfecha_Pago").val(formatearFecha(json.fecha_Pago));
+                $("#txtidPersona").val(json.id_Persona);
+            }
+        }
+
+
+        $("#tabla tbody").on("click", '.btn-editar', function () {
+            var filaSeleccionada = $(this).closest("tr");
+
+            // Detecta si la fila es una fila de "detalles" expandida
+            if (filaSeleccionada.hasClass("child")) {
+                // Si es así, obtén la fila original que contiene los datos principales
+                filaSeleccionada = filaSeleccionada.prev();
+            }
+
+            var data = tablaData.row(filaSeleccionada).data();
+
+            abrirModal(data);
+        });
+
+
+            function guardar() {
+
+                var aguinaldo = {
+                    id_Aguinaldo: $("#txtId").val(),
+                    monto_Total: $("#txtmontoTotal").val(),
+                    fecha_Pago: $("#txtfecha_Pago").val(),
+                    id_Persona: $("#txtidPersona").val()
+                };
+                jQuery.ajax({
+                url: '@Url.Action("guardarAguinaldo", "Aguinaldo")',
+                type: "POST",
+                data: JSON.stringify({ obj: aguinaldo }),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    $(".modal-body").LoadingOverlay("hide");
+                    //usuario nuevo
+
+                    if (aguinaldo.id_Aguinaldo == 0) {
+                        if (data.resultado != 0) {
+                            aguinaldo.id_Aguinaldo = data.resultado;
+                            tablaData.row.add(aguinaldo).draw(false);
+                            $("#formModal").modal("hide");
+                            location.reload();
+                        } else {
+                            $("#mensajeError").text(data.mensaje);
+                            $("#mensajeError").show();
+                        }
+                    } else {
+                        //usuario editar
+                        if (data.resultado) {
+                            tablaData.row(filaSelecionada).data(aguinaldo).draw(false); // Actualizar la fila existente en la tabla
+                            $("#formModal").modal("hide");
+                            location.reload();
+                        } else {
+                            $("#mensajeError").text(data.mensaje);
+                            $("#mensajeError").show();
+                        }
+                    }
+                },
+                error: function (error) {
+                    $(".modal-body").LoadingOverlay("hide");
+                    $("#mensajeError").text("Error");
+                    $("#mensajeError").show();
+                },
+                beforeSend: function () {
+                    //Cuando realize algo durante la ejecución
+                    $(".modal-body").LoadingOverlay("show", {
+                        imageResizeFactor: 2,
+                        text: "Cargando.....",
+                        size: 14
+                    });
+                }
+            });
+            }
+
+
+
+
+         $("#tabla tbody").on("click", '.btn-eliminar', function () {
+
+
+                        var aguinaldoSelecionado = $(this).closest("tr");
+
+                        if (aguinaldoSelecionado.hasClass("child")) {
+                            
+                          aguinaldoSelecionado = aguinaldoSelecionado.prev();
+                         }
+
+
+                        var data = tablaData.row(aguinaldoSelecionado).data();
+
+                        console.log(data);
+
+                        swal({
+                            title: "¿Desea eliminar el registro?",
+                            text: "¿Estas seguro?",
+                            type: "warning",
+                            showCancelButton: true,
+                            confirmButtonClass: "btn-primary",
+                            confirmButtonText: "Si",
+                            cancelButtonText: "No",
+
+
+                            closeOnConfirm: true
+                        },
+                            function () {
+
+                                jQuery.ajax({
+                                    url: '@Url.Action("eliminarAguinaldo", "Aguinaldo")',
+                                    type: "POST",
+                                    data: JSON.stringify({ id: data.id_Aguinaldo }),
+                                    dataType: "json",
+                                    contentType: "application/json; charset=utf-8",
+                                    success: function (data) {
+                                        if (data.resultado) {
+                                            tablaData.row(aguinaldoSelecionado).remove().draw();
+                                        } else {
+                                            swal("No se puede eliminar",data.mensaje,"error")
+                                        }
+                                    },
+                                    error: function () {
+
+                                    },
+                                    beforeSend: function () {
+
+                                    },
+                                });
+
+                            });
+
+         });
+
+          function cargarPersona() {
+                $.ajax({
+                    url: '@Url.Action("getPersona", "Aguinaldo")',
+                    type: "GET",
+                    dataType: "json",
+                    success: function (data) {
+                        var $select = $("#txtidPersona");
+                        $select.empty(); // Limpiar opciones existentes
+                        $.each(data.data, function (index, item) {
+                            console.log(data);
+                            $select.append($('<option>', {
+
+                                value: item.id_Persona, // Asignar valor a la opción
+                                text: item.nombre +' '+item.apellido  // Texto que se muestra
+                            }));
+
+                        });
+                    },
+                    error: function (error) {
+                        console.error("Error al cargar persona:", error);
+                    }
+                });
+          }
+
+        $(document).ready(function () {
+            cargarPersona();
+        });
+
+        //Para darle el formato a la fecha
+        function formatearFecha(fechaString) {
+            var fechaMilisegundos = parseInt(fechaString.substr(6));
+            var fecha = new Date(fechaMilisegundos);
+            var fechaFormateada = fecha.toISOString().split('T')[0];
+            return fechaFormateada;
+        }
+
+        function formatearColones(valor) {
+            return new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'CRC' }).format(valor);
+        }
+
+
+    </script>
+
+}

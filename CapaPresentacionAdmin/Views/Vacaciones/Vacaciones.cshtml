@@ -1,0 +1,337 @@
+﻿
+@{
+    ViewBag.Title = "Vacaciones";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<ol class="breadcrumb mb-4 mt-4">
+    <li class="breadcrumb-item"><a href="#">Mantenimiento</a></li>
+    <li class="breadcrumb-item active">Vacaciones</li>
+</ol>
+
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-user"></i> Vacaciones
+    </div>
+    <div class="card-body">
+        
+
+
+        <hr />
+
+        <table id="tabla" class="display cell-border" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Persona</th>
+                    <th>Saldo de vacaciones</th>
+                    <th>Fecha de modificación</th>
+                    <th>Días ganados</th>
+                    <th>Días solicitados</th>
+                    <th>Monto total</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+
+    </div>
+</div>
+
+<div class="modal fade" id="formModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white ">
+                <h5 class="modal-title" id="exampleModalLabel">Crear puesto</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-2">
+                    <input id="txtId" type="hidden" value="0" />
+
+                    <div class="row g-2">
+
+                          <div class="col-sm-6">
+                          <label for="txtIdPersona" class="form-label">Persona</label>
+                          <select class="form-select" id="txtIdPersona" required></select>
+                          </div>
+
+                        <div class="col-sm-6">
+                            <label for="txtSaldoVaca" class="form-label">Saldo de vacaciones</label>
+                            <input type="text" class="form-control" id="txtSaldoVaca" aria-describedby="emailHelp" autocomplete="off">
+
+                        </div>
+
+                        <div class="col-sm-6">
+                            <label for="txtDiasGana" class="form-label">Días ganados</label>
+                            <input type="text" class="form-control" id="txtDiasGana" aria-describedby="emailHelp" autocomplete="off">
+
+                        </div>
+
+                        <div class="col-sm-6">
+                            <label for="txtDiasSoli" class="form-label">Dias solicitados</label>
+                            <input type="text" class="form-control" id="txtDiasSoli" aria-describedby="emailHelp" autocomplete="off">
+
+                        </div>
+
+                        <div class="col-sm-6">
+                            <label for="txtMontoTotal" class="form-label">Monto total</label>
+                            <input type="text" class="form-control" id="txtMontoTotal" aria-describedby="emailHelp" autocomplete="off">
+
+                        </div>
+
+
+
+
+                        <div class="row mt-2">
+                            <div class="col-12">
+                                <div id="mensajeError" class="alert alert-danger" role="alert">
+                                    This is a danger alert—check it out!
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-primary" onclick="guardar()">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+
+@section scripts{
+    <script>
+         var tablaData;
+         var filaSelecionada;
+
+ //Para llenar la tabla, identificador para el tributi id = #
+
+        tablaData = $("#tabla").DataTable({
+
+            responsive: true,
+            ordering: false,
+            "ajax": {
+
+                url: '@Url.Action("listar_Vacaciones", "Vacaciones")',
+                type: "GET",
+                dataType: "json",
+
+            },
+
+            "columns": [
+                {
+                    "data": null,
+                    "render": function (data, type, row) {
+                        return row.nombre + ' ' + row.apellido;
+                    }
+                },
+                { "data": "saldo_Vacaciones" },
+                { "data": "fecha_Modificacion"},
+                { "data": "dias_Ganado" },
+                { "data": "dias_Solicitado" },
+                { "data": "monto_Total" },
+                {
+                    "defaultContent": '<button class="btn btn-primary btn-sm btn-editar">  <i class="fas fa-pen me-1"></i></button>' + '<button class="btn btn-danger btn-sm btn-eliminar">  <i class="fas fa-trash me-1"></i></button>',
+                    "orderable": false,
+                    "searchable": false,
+                    "width": "90px"
+                },
+            ],
+            "language": {
+                "url": "https://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json"
+            }
+        });
+              //abrir el model emergente
+        function abrirModal(json) {
+
+            $("#txtId_Persona").val("");
+            $("#txtSaldoVaca").val("");
+            $("#txtDiasGana").val("");
+            $("#txtDiasSoli").val("");
+            $("#txtMontoTotal").val("");
+            $("#mensajeError").hide();
+
+            $("#formModal").modal("show");
+            if (json != null) {
+                $("#txtId_Persona").val(json.id_Persona);
+                $("#txtSaldoVaca").val(json.saldo_Vacaciones);
+                $("#txtDiasGana").val(json.dias_Ganado);
+                $("#txtDiasSoli").val(json.dias_Solicitado);
+                $("#txtMontoTotal").val(json.monto_Total);
+
+
+
+            }
+        }
+
+
+        $("#tabla tbody").on("click", '.btn-editar', function () {
+            filaSelecionada = $(this).closest("tr");
+            var data = tablaData.row(filaSelecionada).data();
+            abrirModal(data);
+        });
+
+
+
+        function guardar() {
+
+            
+            var vacaciones = {
+                id_Persona: $("#txtIdPersona").val(), // Usar el valor del campo de ID
+                saldo_Vacaciones: $("#txtSaldoVaca").val(),
+                fecha_Modificacion:"",
+                dias_Ganado: $("#txtDiasGana").val(),
+                dias_Solicitado: $("#txtDiasSoli").val(),
+                monto_Total: $("#txtMontoTotal").val(),
+                nombre: "",
+                apellido:""
+
+
+            };
+            console.log("este es el id " + vacaciones.id_Persona);
+                jQuery.ajax({
+                url: '@Url.Action("guardarVacaciones", "Vacaciones")',
+                    type: "POST",
+                    data: JSON.stringify({ obj: vacaciones }),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    $(".modal-body").LoadingOverlay("hide");
+                    //usuario nuev
+
+                    if (vacaciones.id_Persona== 0) {
+
+                            if (data.resultado != 0) {
+                                vacaciones.id_Persona = data.resultado;
+                                tablaData.row.add(vacaciones).draw(false);
+                                $("#formModal").modal("hide");
+                            } else {
+                                $("#mensajeError").text(data.mensaje);
+                                $("#mensajeError").show();
+                            }
+                    } else {
+                        if (data.resultado) {
+                            tablaData.row(filaSelecionada).data(vacaciones).draw(false);
+                                $("#formModal").modal("hide");
+                            } else {
+                                $("#mensajeError").text(data.mensaje);
+                                $("#mensajeError").show();
+                            }
+                    }
+                    },
+                error: function (error) {
+                    $(".modal-body").LoadingOverlay("hide");
+                    $("#mensajeError").text("Error");
+                    $("#mensajeError").show();
+                },
+                beforeSend: function () {
+                    //Cuando realize algo durante la ejecución
+                    $(".modal-body").LoadingOverlay("show", {
+                        imageResizeFactor: 2,
+                        text: "Cargando.....",
+                        size: 14
+                    });
+                }
+            });
+            }
+
+
+
+
+
+         $("#tabla tbody").on("click", '.btn-eliminar', function () {
+
+
+                    var VacaSelecionado = $(this).closest("tr");
+
+             var data = tablaData.row(VacaSelecionado).data();
+
+                        console.log(data);
+
+                        swal({
+                            title: "¿Desea eliminar el registro?",
+                            text: "¿Estas seguro?",
+                            type: "warning",
+                            showCancelButton: true,
+                            confirmButtonClass: "btn-primary",
+                            confirmButtonText: "Si",
+                            cancelButtonText: "No",
+
+
+                            closeOnConfirm: true
+                        },
+                            function () {
+
+                                jQuery.ajax({
+                                    url: '@Url.Action("eliminarVacaciones", "Vacaciones")',
+                                    type: "POST",
+                                    data: JSON.stringify({ id: data.id_Persona }),
+                                    dataType: "json",
+                                    contentType: "application/json; charset=utf-8",
+                                    success: function (data) {
+
+                                        if (data.resultado) {
+                                            tablaData.row(VacaSelecionado).remove().draw();
+                                        } else {
+                                            swal("No se puede eliminar",data.mensaje,"error")
+                                        }
+                                    },
+                                    error: function () {
+
+                                    },
+                                    beforeSend: function () {
+
+                                    },
+                                });
+
+                            });
+
+         });
+
+
+
+          function cargarPersona() {
+                $.ajax({
+                    url: '@Url.Action("getPersona", "Vacaciones")',
+                    type: "GET",
+                    dataType: "json",
+                    success: function (data) {
+                        var $select = $("#txtIdPersona");
+                        $select.empty(); // Limpiar opciones existentes
+                        $.each(data.data, function (index, item) {
+                            console.log(data);
+                            $select.append($('<option>', {
+
+                                value: item.id_Persona, // Asignar valor a la opción
+                                text: item.nombre +' '+item.apellido  // Texto que se muestra
+                            }));
+
+                        });
+                    },
+                    error: function (error) {
+                        console.error("Error al cargar persona:", error);
+                    }
+                });
+          }
+
+    // Llama a la función al cargar la página o cuando sea necesario
+    $(document).ready(function () {
+        cargarPersona();
+    });
+
+
+
+    </script>
+
+}
+

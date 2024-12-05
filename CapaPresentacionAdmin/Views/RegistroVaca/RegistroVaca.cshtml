@@ -1,0 +1,361 @@
+﻿
+@{
+    ViewBag.Title = "RegistroVaca";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+
+<ol class="breadcrumb mb-4 mt-4">
+    <li class="breadcrumb-item"><a href="#">Mantenimiento</a></li>
+    <li class="breadcrumb-item active">Registro de vacaciones</li>
+</ol>
+
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-user"></i> Registro de vacaciones
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-12">
+                <button type="button" class="btn btn-success" onclick="abrirModal(null)">Crear nuevo</button>
+            </div>
+        </div>
+
+
+        <hr />
+
+        <table id="tabla" class="display cell-border" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Id registro</th>
+                    <th>Tipo registro</th>
+                    <th>Persona</th>
+                    <th>Fecha registro</th>
+                    <th>Tipo movimiento</th>
+                    <th>Periodo</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+
+    </div>
+</div>
+
+<div class="modal fade" id="formModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white ">
+                <h5 class="modal-title" id="exampleModalLabel">Crear puesto</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-2">
+                    <input id="txtId" type="hidden" value="0" />
+
+                    <div class="row g-2">
+
+
+                        <div class="col-sm-6">
+                            <label for="txtTipo_Registro" class="form-label">Tipo registro</label>
+                            <select class="form-select" id="txtTipo_Registro" required>
+                                <option value="-">Rebajo</option>
+                                <option value="+">Aumento</option>
+                            </select>
+                        </div>
+
+                        <div class="col-sm-6">
+                            <label for="txtidPersona" class="form-label">Persona</label>
+                            <select class="form-select" id="txtidPersona" required></select>
+                        </div>
+
+
+                        <div class="col-sm-6">
+                            <label for="txtFecha_Registro" class="form-label">Fecha registro</label>
+                            <input type="date" class="form-control" id="txtFecha_Registro" aria-describedby="emailHelp" autocomplete="off">
+
+                        </div>
+
+                        <div class="col-sm-6">
+                            <label for="txtTipo_Movimiento" class="form-label">Tipo de moviemiento</label>
+                            <select class="form-select" id="txtTipo_Movimiento" required>
+                                <option value="Cálculo de Planilla">Cálculo de Planilla</option>
+                                <option value="Solicitud de vacaciones">Solicitud de vacaciones</option>
+                            </select>
+
+                        </div>
+
+                        <div class="col-sm-6">
+                            <label for="txtPeriodo" class="form-label">Periodo</label>
+                            <input type="date" class="form-control" id="txtPeriodo" aria-describedby="emailHelp" autocomplete="off">
+
+                        </div>
+
+
+                        <div class="row mt-2">
+                            <div class="col-12">
+                                <div id="mensajeError" class="alert alert-danger" role="alert">
+                                    This is a danger alert—check it out!
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-primary" onclick="guardar()">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+
+@section scripts{
+    <script>
+         var tablaData;
+         var filaSelecionada;
+
+ //Para llenar la tabla, identificador para el tributi id = #
+
+        tablaData = $("#tabla").DataTable({
+
+            responsive: true,
+            ordering: false,
+            "ajax": {
+
+                url: '@Url.Action("listar_RegistroVaca", "RegistroVaca")',
+                type: "GET",
+                dataType: "json",
+
+            },
+
+            "columns": [
+                { "data": "id_Registro" },
+                { "data": "tipo_Registro" },
+                {
+                    "data": null,
+                    "render": function (data, type, row) {
+                        return row.nombre + ' ' + row.apellido;
+                    }
+                },
+                { "data": "fecha_Registro" },
+                { "data": "tipo_Movimiento" },
+                { "data": "periodo" },
+                {
+                    "defaultContent": '<button class="btn btn-primary btn-sm btn-editar">  <i class="fas fa-pen me-1"></i></button>' + '<button class="btn btn-danger btn-sm btn-eliminar">  <i class="fas fa-trash me-1"></i></button>',
+                    "orderable": false,
+                    "searchable": false,
+                    "width": "90px"
+                },
+            ],
+            "language": {
+                "url": "https://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json"
+            }
+        });
+              //abrir el model emergente
+        function abrirModal(json) {
+            $("#txtId").val("0");
+            $("#txtTipo_Registro").val("");
+            $("#txtidPersona").val("");
+            $("#txtFecha_Registro").val("");
+            $("#txtTipo_Movimiento").val("");
+            $("#txtPeriodo").val("");
+            $("#mensajeError").hide();
+
+            $("#formModal").modal("show");
+            if (json != null) {
+                $("#txtId").val(json.id_Registro);
+                $("#txtTipo_Registro").val(json.tipo_Registro);
+                $("#txtidPersona").val(json.id_Persona);
+                $("#txtFecha_Registro").val(json.fecha_Registro);
+                $("#txtTipo_Movimiento").val(json.tipo_Movimiento);
+                $("#txtPeriodo").val(año(json.periodo));
+
+
+            }
+        }
+
+
+        $("#tabla tbody").on("click", '.btn-editar', function () {
+            var filaSeleccionada = $(this).closest("tr");
+
+            // Detecta si la fila es una fila de "detalles" expandida
+            if (filaSeleccionada.hasClass("child")) {
+                // Si es así, obtén la fila original que contiene los datos principales
+                filaSeleccionada = filaSeleccionada.prev();
+            }
+
+            var data = tablaData.row(filaSeleccionada).data();
+
+            abrirModal(data);
+        });
+
+
+
+        function guardar() {
+
+
+            var registro_Vaca = {
+                id_Registro: $("#txtId").val(), // Usar el valor del campo de ID
+                tipo_Registro: $("#txtTipo_Registro").val(),
+                id_Persona: $("#txtidPersona").val(),
+                fecha_Registro: $("#txtFecha_Registro").val(),
+                tipo_Movimiento: $("#txtTipo_Movimiento").val(),
+                periodo: año($("#txtPeriodo").val())
+
+            };
+                jQuery.ajax({
+                url: '@Url.Action("guardarRegistroVaca", "RegistroVaca")',
+                    type: "POST",
+                    data: JSON.stringify({ obj: registro_Vaca }),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    $(".modal-body").LoadingOverlay("hide");
+                    //usuario nuev
+
+                    if (registro_Vaca.id_Registro == 0) {
+
+                            if (data.resultado != 0) {
+                                registro_Vaca.id_Registro = data.resultado;
+                                tablaData.row.add(registro_Vaca).draw(false);
+                                $("#formModal").modal("hide");
+                            } else {
+                                $("#mensajeError").text(data.mensaje);
+                                $("#mensajeError").show();
+                            }
+                    } else {
+                        if (data.resultado) {
+                            tablaData.row(filaSelecionada).data(registro_Vaca).draw(false);
+                                $("#formModal").modal("hide");
+                            } else {
+                                $("#mensajeError").text(data.mensaje);
+                                $("#mensajeError").show();
+                            }
+                    }
+                    },
+                error: function (error) {
+                    $(".modal-body").LoadingOverlay("hide");
+                    $("#mensajeError").text("Error");
+                    $("#mensajeError").show();
+                },
+                beforeSend: function () {
+                    //Cuando realize algo durante la ejecución
+                    $(".modal-body").LoadingOverlay("show", {
+                        imageResizeFactor: 2,
+                        text: "Cargando.....",
+                        size: 14
+                    });
+                }
+            });
+            }
+
+
+
+
+
+         $("#tabla tbody").on("click", '.btn-eliminar', function () {
+
+
+                    var registoVacaSelecionado = $(this).closest("tr");
+
+             var data = tablaData.row(registoVacaSelecionado).data();
+
+                        console.log(data);
+
+                        swal({
+                            title: "¿Desea eliminar el registro?",
+                            text: "¿Estas seguro?",
+                            type: "warning",
+                            showCancelButton: true,
+                            confirmButtonClass: "btn-primary",
+                            confirmButtonText: "Si",
+                            cancelButtonText: "No",
+
+
+                            closeOnConfirm: true
+                        },
+                            function () {
+
+                                jQuery.ajax({
+                                    url: '@Url.Action("eliminarRegistroVaca", "RegistroVaca")',
+                                    type: "POST",
+                                    data: JSON.stringify({ id: data.id_Registro }),
+                                    dataType: "json",
+                                    contentType: "application/json; charset=utf-8",
+                                    success: function (data) {
+
+                                        if (data.resultado) {
+                                            tablaData.row(registoVacaSelecionado).remove().draw();
+                                        } else {
+                                            swal("No se puede eliminar",data.mensaje,"error")
+                                        }
+                                    },
+                                    error: function () {
+
+                                    },
+                                    beforeSend: function () {
+
+                                    },
+                                });
+
+                            });
+
+         });
+
+         function cargarPersona() {
+          $.ajax({
+              url: '@Url.Action("getPersona", "Prestamos")',
+              type: "GET",
+              dataType: "json",
+              success: function (data) {
+                  var $select = $("#txtidPersona");
+                  $select.empty(); // Limpiar opciones existentes
+                  $.each(data.data, function (index, item) {
+                      console.log(data);
+                      $select.append($('<option>', {
+
+                          value: item.id_Persona, // Asignar valor a la opción
+                          text: item.nombre +' '+item.apellido  // Texto que se muestra
+                      }));
+
+                  });
+              },
+              error: function (error) {
+                  console.error("Error al cargar persona:", error);
+              }
+          });
+
+
+
+
+
+
+         }
+
+        $(document).ready(function () {
+            cargarPersona();
+        });
+
+       
+        function año(fecha) {
+
+            var fechaCon = new Date(fecha);
+            var año = fechaCon.getFullYear();
+
+            return año;
+        }
+
+    </script>
+
+}
+
