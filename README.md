@@ -1,4 +1,4 @@
-# SagicorRH
+
 # Project Title
 Gestión del recurso humano
 
