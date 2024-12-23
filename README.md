@@ -1,25 +1,25 @@
+Proyecto: Gestión del Recurso Humano
 
-# Nombre del proyecto
-Gestión del recurso humano
+¡Bienvenido a Gestión del Recurso Humano! Este proyecto está diseñado para simplificar y optimizar los procesos relacionados con la administración de recursos humanos, proporcionando una herramienta eficiente, moderna y de fácil uso.
 
-## Caracteristicas
-- Live Preview
-- Free to use
+🔧 Tecnología Utilizada
 
-## Tecnologia usada
-- HTML
-- JavaScript
-- C#
+Este proyecto aprovecha una combinación poderosa de tecnologías modernas para ofrecer una solución rápida y confiable:
 
+HTML5: Construcción de estructuras robustas y accesibles para la web.
 
+JavaScript: Interactividad avanzada y una experiencia de usuario fluida.
 
+C#: Lógica de negocio y procesamiento eficiente en el servidor.
 
+🔄 Visítenos o Colabore
 
-```
+Está abierto para desarrolladores y usuarios que deseen colaborar o adaptar esta herramienta a sus necesidades.
 
 
-## Contributing
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
-## License
-This project is open source.
+
+
+
+
+
